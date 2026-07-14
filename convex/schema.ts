@@ -1,5 +1,10 @@
-import { defineSchema } from "convex/server";
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
 
 // Behaviour/sub-behaviour data model not yet decided (see PROJECT_SETUP.md).
 // Add tables here once the shape is settled.
-export default defineSchema({});
+export default defineSchema({
+    settings: defineTable({
+        ownerId: v.string(), // identity.tokenIdentifier
+    }).index("by_owner", ["ownerId"]),
+});

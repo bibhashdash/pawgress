@@ -1,25 +1,51 @@
 {
   "expo": {
-    "name": "dog-training-tracker",
-    "slug": "dog-training-tracker",
+    "name": "Pawgress",
+    "slug": "pawgress",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "scheme": "pawgress",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bibhashdash1234.pawgress"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FFFCF2",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.bibhashdash1234.pawgress"
     },
     "web": {
+      "output": "static",
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFCF2",
+          "dark": {
+            "backgroundColor": "#252422"
+          }
+        }
+      ],
+      "expo-secure-store",
+      "@clerk/expo"
+    ],
+    "experiments": {
+      "typedRoutes": true
     }
   }
 }

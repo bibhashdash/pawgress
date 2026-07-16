@@ -7,4 +7,10 @@ export default defineSchema({
     settings: defineTable({
         ownerId: v.string(), // identity.tokenIdentifier
     }).index("by_owner", ["ownerId"]),
+
+    behaviourClasses: defineTable({
+        ownerId: v.string(), // identity.tokenIdentifier
+        title: v.string(),
+        subclasses: v.optional(v.array(v.string())),
+    }).index("by_owner", ["ownerId"]),
 });

@@ -11,6 +11,7 @@ const buttonVariants = cva(
         variants: {
             variant: {
                 default: "bg-primary active:opacity-90",
+                primary: "bg-accent active:opacity-90",
                 destructive: "bg-destructive active:opacity-90",
                 outline: "border border-border bg-background active:bg-muted",
                 secondary: "bg-secondary active:opacity-90",
@@ -35,6 +36,7 @@ const buttonTextVariants = cva("text-base font-semibold", {
     variants: {
         variant: {
             default: "text-primary-foreground",
+            primary: "text-primary-foreground",
             destructive: "text-destructive-foreground",
             outline: "text-foreground",
             secondary: "text-secondary-foreground",

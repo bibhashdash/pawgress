@@ -1,9 +1,11 @@
 import { useAuth } from "@clerk/expo";
-import { Redirect, Tabs } from "expo-router";
-import { House, NotebookPen, PawPrint, Settings } from "lucide-react-native";
+import { Redirect, Tabs, useRouter } from "expo-router";
+import { ChevronLeft, House, NotebookPen, PawPrint, Settings } from "lucide-react-native";
+import { Pressable } from "react-native";
 
 export default function TabLayout() {
     const { isSignedIn } = useAuth();
+    const router = useRouter();
 
     if (!isSignedIn) {
         return <Redirect href="/(auth)/sign-in" />;
@@ -47,6 +49,19 @@ export default function TabLayout() {
                 options={{
                     title: "Settings",
                     tabBarIcon: ({ color, size }) => <Settings color={color} size={size} />,
+                }}
+            />
+            <Tabs.Screen
+                name="behaviourClassAdd"
+                options={{
+                    href: null,
+                    title: "Add Behaviour Class",
+                    headerShown: true,
+                    headerLeft: () => (
+                        <Pressable onPress={() => router.navigate("/(tabs)/settings")} className="pl-4 pr-2">
+                            <ChevronLeft color="#403D39" size={24} />
+                        </Pressable>
+                    ),
                 }}
             />
         </Tabs>

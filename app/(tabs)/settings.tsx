@@ -7,7 +7,7 @@ import {api} from "@/convex/_generated/api";
 import {TabHeader} from "@/components/TabHeader";
 import {Button} from "@/components/ui/button";
 import {Text} from "@/components/ui/text";
-import {PlusCircle, X} from 'lucide-react-native'
+import {PlusCircle} from 'lucide-react-native'
 import {useFocusEffect} from "expo-router/react-navigation";
 import {Input} from "@/components/ui/input";
 import {Link} from "expo-router";

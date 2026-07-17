@@ -1,4 +1,4 @@
-import {Pressable, View, TouchableOpacity, FlatList} from "react-native";
+import {FlatList, View} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useState} from "react";
 import {Text} from "@/components/ui/text";

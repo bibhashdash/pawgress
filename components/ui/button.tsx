@@ -15,7 +15,8 @@ const buttonVariants = cva(
                 destructive: "bg-destructive active:opacity-90",
                 outline: "border border-border bg-background active:bg-muted",
                 secondary: "bg-secondary active:opacity-90",
-                ghost: "active:bg-muted",
+                ghost: "active:opacity-50",
+                icon: "active:opacity-50",
                 link: "",
             },
             size: {
@@ -42,6 +43,7 @@ const buttonTextVariants = cva("text-base font-semibold", {
             secondary: "text-secondary-foreground",
             ghost: "text-foreground",
             link: "text-accent underline",
+            icon: "text-foreground"
         },
         size: {
             default: "",

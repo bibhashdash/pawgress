@@ -58,7 +58,20 @@ export default function TabLayout() {
                     title: "Add Behaviour Class",
                     headerShown: true,
                     headerLeft: () => (
-                        <Pressable onPress={() => router.navigate("/(tabs)/settings")} className="pl-4 pr-2">
+                        <Pressable onPress={() => router.navigate("/(tabs)/behaviours")} className="pl-4 pr-2">
+                            <ChevronLeft color="#403D39" size={24} />
+                        </Pressable>
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="behaviourClassDetails/[id]"
+                options={{
+                    href: null,
+                    title: "Behaviour Class",
+                    headerShown: true,
+                    headerLeft: () => (
+                        <Pressable onPress={() => router.navigate("/(tabs)/behaviours")} className="pl-4 pr-2">
                             <ChevronLeft color="#403D39" size={24} />
                         </Pressable>
                     ),

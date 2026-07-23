@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import {mutation, query} from "./_generated/server";
 import { requireOwnerId } from "./model/auth";
 import type { MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
@@ -13,6 +13,50 @@ async function requireOwnedClass(ctx: MutationCtx, id: Id<"behaviourClasses">, o
     }
     return existing;
 }
+
+export const list = query({
+    args: {},
+    returns: v.array(
+        v.object({
+            _id: v.id("behaviourClasses"),
+            _creationTime: v.number(),
+            ownerId: v.string(),
+            title: v.string(),
+            subclasses: v.optional(v.array(v.string())),
+        }),
+    ),
+    handler: async (ctx) => {
+        const ownerId = await requireOwnerId(ctx);
+        return await ctx.db
+            .query("behaviourClasses")
+            .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+            .collect();
+    },
+});
+
+export const get = query({
+    args: {
+        id: v.id("behaviourClasses"),
+    },
+    returns: v.union(
+        v.object({
+            _id: v.id("behaviourClasses"),
+            _creationTime: v.number(),
+            ownerId: v.string(),
+            title: v.string(),
+            subclasses: v.optional(v.array(v.string())),
+        }),
+        v.null(),
+    ),
+    handler: async (ctx, args) => {
+        const ownerId = await requireOwnerId(ctx);
+        const existing = await ctx.db.get(args.id);
+        if (!existing || existing.ownerId !== ownerId) {
+            return null;
+        }
+        return existing;
+    },
+});
 
 export const create = mutation({
     args: {

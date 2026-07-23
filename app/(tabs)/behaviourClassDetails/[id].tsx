@@ -177,7 +177,6 @@ export default function BehaviourClassDetails() {
                             behaviour={behaviour}
                             subclasses={behaviour.subclasses ?? []}
                             subclass={item}
-                            onDeletePress={text => {} }
                             onResult={setResult}
                         />
                     }

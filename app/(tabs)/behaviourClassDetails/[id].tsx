@@ -1,29 +1,107 @@
 import {useLocalSearchParams} from "expo-router/build/hooks";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {FlatList, Text, View} from "react-native";
+import {Alert, FlatList, Text, View} from "react-native";
 import {useMutation, useQuery} from "convex/react";
 import {api} from "@/convex/_generated/api";
 import type {Id} from "@/convex/_generated/dataModel";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {CheckIcon, Trash2Icon, X} from "lucide-react-native";
+import {CheckIcon, CirclePlus, Trash2Icon, X} from "lucide-react-native";
 import {SubclassEdit} from "@/components/BehaviourClass/subclassEdit";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
+import {isStringBlank} from "@/lib/utils";
+import {useFocusEffect} from "expo-router/react-navigation";
 
 export default function BehaviourClassDetails() {
     const {id} = useLocalSearchParams<{ id: string }>()
     const behaviour = useQuery(api.behaviourClasses.get, {id: id as Id<"behaviourClasses">})
     const updateBehaviourClass = useMutation(api.behaviourClasses.update)
     const [isLoading, setIsLoading] = useState<boolean>(false)
-    const [errorMessage, setErrorMessage] = useState<boolean>(false)
+    const [isAddingNewSubclass, setIsAddingNewSubclass] = useState(false)
     const [title, setTitle] = useState<string>(behaviour?.title ?? "")
     const [editMode, setEditMode] = useState<boolean>(false)
+    const [addMode, setAddMode] = useState<boolean>(false)
+    const [newSubclass, setNewSubclass] = useState<string>("")
+    const [result, setResult] = useState<{
+        label: string,
+        message: string
+    } | null>(null)
 
     useEffect(() => {
         setTitle(behaviour?.title ?? "")
     }, [behaviour?.title]);
 
+    useEffect(() => {
+        if (result !== null) {
+            Alert.alert(
+                result.label,
+                result.message,
+                [
+                    {
+                        text: 'Ok',
+                        onPress: () => setResult(null),
+                        style: 'default',
+                    },
+                ]
+            );
+        }
+    }, [result]);
+    useFocusEffect(
+        useCallback(() => {
+            setNewSubclass("")
+        }, [])
+    );
     if (!behaviour) return null;
+
+    const saveTitle = (): void => {
+        setIsLoading(true)
+        updateBehaviourClass({
+            id: behaviour._id,
+            title: title,
+            subclasses: behaviour.subclasses,
+        })
+            .then(() => {
+            setResult({
+                label: "Success",
+                message: "Title successfully updated"
+            })
+        })
+            .catch(() => {
+                setResult({
+                    label: "Error",
+                    message: "There was an error updating the title"
+                })
+            })
+            .finally(() => {
+            setEditMode(false)
+            setIsLoading(false)
+        })
+    }
+
+    const addNewSubclass = (): void => {
+        setIsAddingNewSubclass(true)
+        updateBehaviourClass({
+            id: behaviour._id as Id<"behaviourClasses">,
+            title: behaviour.title,
+            subclasses: behaviour.subclasses ? [...behaviour.subclasses, newSubclass] : [newSubclass],
+        }).then(
+            () => setResult({
+                label: "Success",
+                message: "Subclass successfully added"
+            })
+        ). catch(
+            () => setResult({
+                label: "Error",
+                message: "There was an error adding this Subclass"
+            })
+        ).finally(() => {
+            setIsAddingNewSubclass(false)
+            setNewSubclass("")
+            setAddMode(false)
+        })
+        setNewSubclass("")
+        setAddMode(false)
+    }
 
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["bottom", "left", "right"]}>
@@ -39,30 +117,19 @@ export default function BehaviourClassDetails() {
                             </Text>
                             <View className="mt-5">
                                 <Text className="mb-2">Name</Text>
-                                <View className="flex-row items-center">
+                                <View className="flex-row items-center gap-3">
                                     <Input
                                         className="rounded-md h-[50] flex-1"
                                         onFocus={() => setEditMode(true)}
                                         value={title}
                                         onChangeText={setTitle}
+                                        onSubmitEditing={ () => saveTitle() }
                                     />
                                     <View className="flex-row gap-3">
                                         <Button
                                             disabled={isLoading || !editMode}
-                                            onPress={() => {
-                                                setIsLoading(true)
-                                                updateBehaviourClass({
-                                                    id: behaviour._id,
-                                                    title: title,
-                                                    subclasses: behaviour.subclasses,
-                                                }).then(() => {
-                                                    //     some sort of success toast
-                                                })
-                                                    .catch(() => {
-                                                        setErrorMessage(true)
-                                                    }).finally(() => setIsLoading(false))
-                                                setEditMode(false)
-                                            }} variant="icon" size="sm" className="p-0">
+                                            onPress={() => saveTitle() }
+                                            variant="icon" size="sm" className="p-0">
                                             <CheckIcon color="#16a34a"/>
                                         </Button>
 
@@ -83,6 +150,25 @@ export default function BehaviourClassDetails() {
                                     </View>
                                 </View>
                             </View>
+                            <View className="flex-row items-center gap-3 ml-20 mt-3">
+                                <Input
+                                    onFocus={() => setAddMode(true)}
+                                    onSubmitEditing={e => addNewSubclass()} placeholder="Add a subclass" className="flex-1 rounded-md h-[50]" value={newSubclass} onChangeText={setNewSubclass} />
+                                <View className="flex-row gap-3 items-center">
+                                    <Button loading={isAddingNewSubclass} onPress={() => addNewSubclass()} className="p-0" variant="icon" disabled={isStringBlank(newSubclass)}>
+                                        <CirclePlus />
+                                    </Button>
+                                    <Button
+                                        disabled={newSubclass === ""}
+                                        variant="icon" size="sm" className="p-0"
+                                        onPress={() => {
+                                            setNewSubclass("")
+                                            setAddMode(false)
+                                        }}>
+                                        <X />
+                                    </Button>
+                                </View>
+                            </View>
                         </View>
                     }
                     data={behaviour.subclasses}
@@ -92,6 +178,7 @@ export default function BehaviourClassDetails() {
                             subclasses={behaviour.subclasses ?? []}
                             subclass={item}
                             onDeletePress={text => {} }
+                            onResult={setResult}
                         />
                     }
                     keyExtractor={(item) => item}

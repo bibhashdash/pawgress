@@ -8,7 +8,7 @@ import {useMutation} from "convex/react";
 import {api} from "@/convex/_generated/api";
 import type {Id} from "@/convex/_generated/dataModel";
 
-export const SubclassEdit = ({subclass, subclasses, onDeletePress, behaviour}: {
+export const SubclassEdit = ({subclass, subclasses, onDeletePress, behaviour, onResult}: {
     subclass: string,
     onDeletePress: (subclass: string) => void,
     subclasses: string[],
@@ -19,7 +19,7 @@ export const SubclassEdit = ({subclass, subclasses, onDeletePress, behaviour}: {
         ownerId: string
         title: string
     } | null | undefined
-
+    onResult: (result: { label: string, message: string }) => void
 
 }) => {
     const updateBehaviourClass = useMutation(api.behaviourClasses.update)
@@ -39,6 +39,38 @@ export const SubclassEdit = ({subclass, subclasses, onDeletePress, behaviour}: {
         setNewSubclassName(subclass)
     }, [subclass]);
 
+    const saveSubclass = () => {
+        setIsLoading(true)
+        if (subclasses && behaviour && behaviour.subclasses) {
+            let newArray;
+            const index = behaviour.subclasses.indexOf(subclass)
+            if (index > -1) {
+                newArray = behaviour.subclasses.toSpliced(index, 1, newSubclassName)
+                updateBehaviourClass({
+                    id: behaviour._id as Id<"behaviourClasses">,
+                    title: behaviour.title,
+                    subclasses: newArray && newArray.length > 0 ? newArray : undefined,
+                }).then(() => {
+                    onResult({
+                        label: "Success",
+                        message: "Subclass successfully updated"
+                    })
+                })
+                    .catch(() => {
+                        onResult({
+                            label: "Error",
+                            message: "There was an error updating the Subclass"
+                        })
+
+                    })
+                    .finally(() => {
+                    setIsLoading(false)
+                    setEditMode(false)
+                })
+            }
+        }
+    }
+
     return (
         <View className="flex-row gap-3 items-center">
             <View
@@ -49,35 +81,14 @@ export const SubclassEdit = ({subclass, subclasses, onDeletePress, behaviour}: {
                     className={`rounded-md h-[50] w-full border border-input bg-white`}
                     value={newSubclassName} onChangeText={setNewSubclassName}
                     readOnly={isLoading}
+                    onSubmitEditing={() => saveSubclass()}
                 />
             </View>
             <View className="flex-row gap-3">
                 <Button
                     loading={isLoading}
                     disabled={isLoading || !editMode}
-                    onPress={() => {
-                        setIsLoading(true)
-                        if (subclasses && behaviour && behaviour.subclasses) {
-                            let newArray;
-                            const index = behaviour.subclasses.indexOf(subclass)
-                            if (index > -1) {
-                                newArray = behaviour.subclasses.toSpliced(index, 1, newSubclassName)
-                                updateBehaviourClass({
-                                    id: behaviour._id as Id<"behaviourClasses">,
-                                    title: behaviour.title,
-                                    subclasses: newArray && newArray.length > 0 ? newArray : undefined,
-                                }).then(() => {
-                                    //     some sort of success toast
-                                    setIsLoading(false)
-                                })
-                                    .catch(() => {
-                                        setIsLoading(false)
-
-                                    }).finally(() => setIsLoading(false))
-                            }
-                        }
-                        setEditMode(false)
-                    }} variant="icon" size="sm" className="p-0">
+                    onPress={() => saveSubclass() } variant="icon" size="sm" className="p-0">
                     <CheckIcon color="#16a34a"/>
                 </Button>
 

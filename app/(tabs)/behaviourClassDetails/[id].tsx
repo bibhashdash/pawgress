@@ -11,17 +11,21 @@ import {SubclassEdit} from "@/components/BehaviourClass/subclassEdit";
 import {useCallback, useEffect, useState} from "react";
 import {isStringBlank} from "@/lib/utils";
 import {useFocusEffect} from "expo-router/react-navigation";
+import {router} from "expo-router";
 
 export default function BehaviourClassDetails() {
     const {id} = useLocalSearchParams<{ id: string }>()
     const behaviour = useQuery(api.behaviourClasses.get, {id: id as Id<"behaviourClasses">})
     const subclasses = useQuery(api.subclasses.list, behaviour ? {behaviourClassId: behaviour._id} : "skip")
     const updateBehaviourClass = useMutation(api.behaviourClasses.update)
+    const removeBehaviourClass = useMutation(api.behaviourClasses.remove)
     const createSubclass = useMutation(api.subclasses.create)
     const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [isDeleting, setIsDeleting] = useState<boolean>(false)
     const [isAddingNewSubclass, setIsAddingNewSubclass] = useState(false)
     const [title, setTitle] = useState<string>(behaviour?.title ?? "")
     const [editMode, setEditMode] = useState<boolean>(false)
+    const [deleteMode, setDeleteMode] = useState<boolean>(false)
     const [addMode, setAddMode] = useState<boolean>(false)
     const [newSubclass, setNewSubclass] = useState<string>("")
     const [result, setResult] = useState<{
@@ -79,6 +83,24 @@ export default function BehaviourClassDetails() {
         })
     }
 
+    const deleteClass = (): void => {
+        setIsDeleting(true)
+        removeBehaviourClass({ id: behaviour._id })
+            .then(() => {
+                router.back()
+            })
+            .catch(() => {
+                setResult({
+                    label: "Error",
+                    message: "There was an error deleting this class"
+                })
+            })
+            .finally(() => {
+                setIsDeleting(false)
+                setDeleteMode(false)
+            })
+    }
+
     const addNewSubclass = (): void => {
         setIsAddingNewSubclass(true)
         createSubclass({
@@ -120,35 +142,56 @@ export default function BehaviourClassDetails() {
                                 <View className="flex-row items-center gap-3">
                                     <Input
                                         className="rounded-md h-[50] flex-1"
-                                        onFocus={() => setEditMode(true)}
+                                        onFocus={() => {
+                                            if (!deleteMode) setEditMode(true)
+                                        }}
+                                        readOnly={isDeleting}
                                         value={title}
                                         onChangeText={setTitle}
                                         onSubmitEditing={ () => saveTitle() }
                                     />
                                     <View className="flex-row gap-3">
                                         <Button
-                                            disabled={isLoading || !editMode}
+                                            disabled={isLoading || isDeleting || !editMode}
                                             onPress={() => saveTitle() }
                                             variant="icon" size="sm" className="p-0">
                                             <CheckIcon color="#16a34a"/>
                                         </Button>
 
                                         {
-                                            editMode
+                                            (editMode || deleteMode)
                                                 ? <Button
                                                     variant="icon" size="sm" className="p-0"
                                                     onPress={() => {
-                                                        setTitle(behaviour.title)
-                                                        setEditMode(false)
+                                                        if (editMode) {
+                                                            setTitle(behaviour.title)
+                                                            setEditMode(false)
+                                                        } else if (deleteMode) {
+                                                            setDeleteMode(false)
+                                                        }
                                                     }}>
                                                     <X />
                                                 </Button>
-                                                : <Button onPress={() => {}} variant="icon" size="sm" className="p-0">
+                                                : <Button onPress={() => setDeleteMode(true)} variant="icon" size="sm" className="p-0">
                                                     <Trash2Icon/>
                                                 </Button>
                                         }
                                     </View>
                                 </View>
+                                {
+                                    deleteMode
+                                    && <View className="items-end gap-2 mt-3">
+                                        <Text>Remove this behaviour class?</Text>
+                                        <View className="flex-row gap-2">
+                                            <Button onPress={() => setDeleteMode(false)} variant="outline">
+                                                <Text>Cancel</Text>
+                                            </Button>
+                                            <Button loading={isDeleting} disabled={isDeleting} onPress={() => deleteClass()} variant="destructive">
+                                                <Text className="text-white">Confirm</Text>
+                                            </Button>
+                                        </View>
+                                    </View>
+                                }
                             </View>
                             <View className="flex-row items-center gap-3 ml-20 mt-3">
                                 <Input

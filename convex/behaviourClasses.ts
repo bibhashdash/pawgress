@@ -24,14 +24,16 @@ export const list = query({
             ownerId: v.string(),
             title: v.string(),
             subclassCount: v.number(),
+            deletedAt: v.optional(v.number()),
         }),
     ),
     handler: async (ctx) => {
         const ownerId = await requireOwnerId(ctx);
-        return await ctx.db
+        const classes = await ctx.db
             .query("behaviourClasses")
             .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
             .collect();
+        return classes.filter((behaviourClass) => behaviourClass.deletedAt === undefined);
     },
 });
 
@@ -46,6 +48,7 @@ export const get = query({
             ownerId: v.string(),
             title: v.string(),
             subclassCount: v.number(),
+            deletedAt: v.optional(v.number()),
         }),
         v.null(),
     ),
@@ -99,7 +102,20 @@ export const remove = mutation({
     handler: async (ctx, args) => {
         const ownerId = await requireOwnerId(ctx);
         await requireOwnedClass(ctx, args.id, ownerId);
-        await ctx.db.delete(args.id);
+        const deletedAt = Date.now();
+        await ctx.db.patch(args.id, { deletedAt });
+
+        // Cascade: soft-delete every subclass under this class too, so
+        // nothing is left active under a deleted parent.
+        const subclasses = await ctx.db
+            .query("subclasses")
+            .withIndex("by_behaviourClass", (q) => q.eq("behaviourClassId", args.id))
+            .collect();
+        for (const subclass of subclasses) {
+            if (subclass.deletedAt === undefined) {
+                await ctx.db.patch(subclass._id, { deletedAt });
+            }
+        }
         return null;
     },
 });

@@ -157,6 +157,12 @@ export default function BehaviourClassAdd () {
                                     }} className="p-0 px-1" variant="icon" disabled={isStringBlank(subClass)}>
                                         <CirclePlus />
                                     </Button>
+                                    <Button
+                                        disabled={subClass === ""}
+                                        variant="icon" size="sm" className="p-0"
+                                        onPress={() => setSubClass("")}>
+                                        <X />
+                                    </Button>
                                 </View>
                             </View>
                         </>

@@ -26,15 +26,17 @@ export const list = query({
             ownerId: v.string(),
             behaviourClassId: v.id("behaviourClasses"),
             name: v.string(),
+            deletedAt: v.optional(v.number()),
         }),
     ),
     handler: async (ctx, args) => {
         const ownerId = await requireOwnerId(ctx);
         await requireOwnedClass(ctx, args.behaviourClassId, ownerId);
-        return await ctx.db
+        const rows = await ctx.db
             .query("subclasses")
             .withIndex("by_behaviourClass", (q) => q.eq("behaviourClassId", args.behaviourClassId))
             .collect();
+        return rows.filter((row) => row.deletedAt === undefined);
     },
 });
 
@@ -81,7 +83,7 @@ export const remove = mutation({
     handler: async (ctx, args) => {
         const ownerId = await requireOwnerId(ctx);
         const existing = await requireOwnedSubclass(ctx, args.id, ownerId);
-        await ctx.db.delete(args.id);
+        await ctx.db.patch(args.id, { deletedAt: Date.now() });
         const behaviourClass = await ctx.db.get(existing.behaviourClassId);
         if (behaviourClass) {
             await ctx.db.patch(existing.behaviourClassId, {

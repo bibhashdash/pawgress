@@ -105,6 +105,7 @@ export default function BehaviourClassAdd () {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string>();
     const createBehaviourClass = useMutation(api.behaviourClasses.create);
+    const createSubclass = useMutation(api.subclasses.create);
 
     useFocusEffect(
         useCallback(() => {
@@ -118,14 +119,14 @@ export default function BehaviourClassAdd () {
 
     const handleSubmit = () => {
         setIsLoading(true);
-        createBehaviourClass({
-            title,
-            subclasses: subClasses.length > 0 ? subClasses : undefined,
-        }).then(
-            id => router.push({ pathname: "/(tabs)/behaviourClassDetails/[id]", params: { id } }),
-        ).catch(
-            err => setError(err)
-        ).finally(() => setIsLoading(false))
+        createBehaviourClass({ title })
+            .then(async (id) => {
+                await Promise.all(subClasses.map(name => createSubclass({ behaviourClassId: id, name })));
+                router.push({ pathname: "/(tabs)/behaviourClassDetails/[id]", params: { id } });
+            })
+            .catch(
+                err => setError(err)
+            ).finally(() => setIsLoading(false))
     }
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["bottom", "left", "right"]}>

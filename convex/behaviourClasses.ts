@@ -1,12 +1,13 @@
 import { v } from "convex/values";
 import {mutation, query} from "./_generated/server";
 import { requireOwnerId } from "./model/auth";
-import type { MutationCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 
-// Shared ownership check for update/remove: confirms the row exists and
-// belongs to the caller before any mutation touches it.
-async function requireOwnedClass(ctx: MutationCtx, id: Id<"behaviourClasses">, ownerId: string) {
+// Shared ownership check: confirms the row exists and belongs to the
+// caller. Exported so convex/subclasses.ts can verify a behaviourClassId
+// actually belongs to the caller before creating/listing against it.
+export async function requireOwnedClass(ctx: QueryCtx | MutationCtx, id: Id<"behaviourClasses">, ownerId: string) {
     const existing = await ctx.db.get(id);
     if (!existing || existing.ownerId !== ownerId) {
         throw new Error("Behaviour class not found");
@@ -22,7 +23,7 @@ export const list = query({
             _creationTime: v.number(),
             ownerId: v.string(),
             title: v.string(),
-            subclasses: v.optional(v.array(v.string())),
+            subclassCount: v.number(),
         }),
     ),
     handler: async (ctx) => {
@@ -44,7 +45,7 @@ export const get = query({
             _creationTime: v.number(),
             ownerId: v.string(),
             title: v.string(),
-            subclasses: v.optional(v.array(v.string())),
+            subclassCount: v.number(),
         }),
         v.null(),
     ),
@@ -61,7 +62,6 @@ export const get = query({
 export const create = mutation({
     args: {
         title: v.string(),
-        subclasses: v.optional(v.array(v.string())),
     },
     returns: v.id("behaviourClasses"),
     handler: async (ctx, args) => {
@@ -69,7 +69,7 @@ export const create = mutation({
         return await ctx.db.insert("behaviourClasses", {
             ownerId,
             title: args.title,
-            subclasses: args.subclasses,
+            subclassCount: 0,
         });
     },
 });
@@ -78,16 +78,14 @@ export const update = mutation({
     args: {
         id: v.id("behaviourClasses"),
         title: v.optional(v.string()),
-        subclasses: v.optional(v.array(v.string())),
     },
     returns: v.null(),
     handler: async (ctx, args) => {
         const ownerId = await requireOwnerId(ctx);
         await requireOwnedClass(ctx, args.id, ownerId);
 
-        const patch: { title?: string; subclasses?: string[] } = {};
+        const patch: { title?: string } = {};
         if (args.title !== undefined) patch.title = args.title;
-        if (args.subclasses !== undefined) patch.subclasses = args.subclasses;
         await ctx.db.patch(args.id, patch);
         return null;
     },

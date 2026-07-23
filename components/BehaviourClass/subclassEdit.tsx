@@ -6,104 +6,75 @@ import {Input} from "@/components/ui/input";
 import {useFocusEffect} from "expo-router/react-navigation";
 import {useMutation} from "convex/react";
 import {api} from "@/convex/_generated/api";
-import type {Id} from "@/convex/_generated/dataModel";
+import type {Doc} from "@/convex/_generated/dataModel";
 
-export const SubclassEdit = ({subclass, subclasses, behaviour, onResult}: {
-    subclass: string,
-    subclasses: string[],
-    behaviour: {
-        _id: Id<"behaviourClasses">
-        _creationTime: number
-        subclasses?: string[] | undefined
-        ownerId: string
-        title: string
-    } | null | undefined
-    onResult: (result: { label: string, message: string }) => void
-
+export const SubclassEdit = ({subclass, onResult}: {
+    subclass: Doc<"subclasses">,
+    onResult: (result: { label: string, message: string }) => void,
 }) => {
-    const updateBehaviourClass = useMutation(api.behaviourClasses.update)
-    const removeBehaviourClass = useMutation(api.behaviourClasses.remove)
+    const updateSubclass = useMutation(api.subclasses.update)
+    const removeSubclass = useMutation(api.subclasses.remove)
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [isDeleting, setIsDeleting] = useState<boolean>(false)
     const [editMode, setEditMode] = useState<boolean>(false)
     const [deleteMode, setDeleteMode] = useState<boolean>(false)
-    const [newSubclassName, setNewSubclassName] = useState<string>(subclass)
+    const [newSubclassName, setNewSubclassName] = useState<string>(subclass.name)
     const inputRef = useRef<TextInput>(null)
 
     useFocusEffect(
         useCallback(() => {
             setEditMode(false);
-            setNewSubclassName(subclass);
+            setNewSubclassName(subclass.name);
         }, [])
     );
 
     useEffect(() => {
-        setNewSubclassName(subclass)
-    }, [subclass]);
+        setNewSubclassName(subclass.name)
+    }, [subclass.name]);
 
     const saveSubclass = () => {
         setIsLoading(true)
-        if (subclasses && behaviour && behaviour.subclasses) {
-            let newArray;
-            const index = behaviour.subclasses.indexOf(subclass)
-            if (index > -1) {
-                newArray = behaviour.subclasses.toSpliced(index, 1, newSubclassName)
-                updateBehaviourClass({
-                    id: behaviour._id as Id<"behaviourClasses">,
-                    title: behaviour.title,
-                    subclasses: newArray && newArray.length > 0 ? newArray : undefined,
-                }).then(() => {
-                    onResult({
-                        label: "Success",
-                        message: "Subclass successfully updated"
-                    })
+        updateSubclass({
+            id: subclass._id,
+            name: newSubclassName,
+        }).then(() => {
+            onResult({
+                label: "Success",
+                message: "Subclass successfully updated"
+            })
+        })
+            .catch(() => {
+                onResult({
+                    label: "Error",
+                    message: "There was an error updating the Subclass"
                 })
-                    .catch(() => {
-                        onResult({
-                            label: "Error",
-                            message: "There was an error updating the Subclass"
-                        })
-
-                    })
-                    .finally(() => {
-                    setIsLoading(false)
-                    setEditMode(false)
-                })
-            }
-        }
+            })
+            .finally(() => {
+                setIsLoading(false)
+                setEditMode(false)
+            })
     }
 
     const deleteSubclass = () => {
         setIsDeleting(true)
-        if (subclasses && behaviour && behaviour.subclasses) {
-            let newArray;
-            const index = behaviour.subclasses.indexOf(subclass)
-            if (index > -1) {
-                newArray = behaviour.subclasses.toSpliced(index, 1)
-                updateBehaviourClass({
-                    id: behaviour._id as Id<"behaviourClasses">,
-                    title: behaviour.title,
-                    subclasses: newArray,
-                }).then(() => {
-                    onResult({
-                        label: "Success",
-                        message: "Subclass successfully deleted"
-                    })
+        removeSubclass({
+            id: subclass._id,
+        }).then(() => {
+            onResult({
+                label: "Success",
+                message: "Subclass successfully deleted"
+            })
+        })
+            .catch(() => {
+                onResult({
+                    label: "Error",
+                    message: "There was an error deleting the Subclass"
                 })
-                    .catch(() => {
-                        onResult({
-                            label: "Error",
-                            message: "There was an error deleting the Subclass"
-                        })
-
-                    })
-                    .finally(() => {
-                        setIsDeleting(false)
-                        setDeleteMode(false)
-                    })
-            }
-        }
-
+            })
+            .finally(() => {
+                setIsDeleting(false)
+                setDeleteMode(false)
+            })
     }
 
     return (
@@ -136,7 +107,7 @@ export const SubclassEdit = ({subclass, subclasses, behaviour, onResult}: {
                                 variant="icon" size="sm" className="p-0"
                                 onPress={() => {
                                     if (editMode) {
-                                        setNewSubclassName(subclass)
+                                        setNewSubclassName(subclass.name)
                                         setEditMode(false)
                                     } else if (deleteMode) {
                                         setDeleteMode(false)

@@ -15,7 +15,9 @@ import {useFocusEffect} from "expo-router/react-navigation";
 export default function BehaviourClassDetails() {
     const {id} = useLocalSearchParams<{ id: string }>()
     const behaviour = useQuery(api.behaviourClasses.get, {id: id as Id<"behaviourClasses">})
+    const subclasses = useQuery(api.subclasses.list, behaviour ? {behaviourClassId: behaviour._id} : "skip")
     const updateBehaviourClass = useMutation(api.behaviourClasses.update)
+    const createSubclass = useMutation(api.subclasses.create)
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [isAddingNewSubclass, setIsAddingNewSubclass] = useState(false)
     const [title, setTitle] = useState<string>(behaviour?.title ?? "")
@@ -58,7 +60,6 @@ export default function BehaviourClassDetails() {
         updateBehaviourClass({
             id: behaviour._id,
             title: title,
-            subclasses: behaviour.subclasses,
         })
             .then(() => {
             setResult({
@@ -80,10 +81,9 @@ export default function BehaviourClassDetails() {
 
     const addNewSubclass = (): void => {
         setIsAddingNewSubclass(true)
-        updateBehaviourClass({
-            id: behaviour._id as Id<"behaviourClasses">,
-            title: behaviour.title,
-            subclasses: behaviour.subclasses ? [...behaviour.subclasses, newSubclass] : [newSubclass],
+        createSubclass({
+            behaviourClassId: behaviour._id,
+            name: newSubclass,
         }).then(
             () => setResult({
                 label: "Success",
@@ -171,16 +171,14 @@ export default function BehaviourClassDetails() {
                             </View>
                         </View>
                     }
-                    data={behaviour.subclasses}
+                    data={subclasses}
                     renderItem={
                         ({ item }) => <SubclassEdit
-                            behaviour={behaviour}
-                            subclasses={behaviour.subclasses ?? []}
                             subclass={item}
                             onResult={setResult}
                         />
                     }
-                    keyExtractor={(item) => item}
+                    keyExtractor={(item) => item._id}
                 />
             </View>
         </SafeAreaView>

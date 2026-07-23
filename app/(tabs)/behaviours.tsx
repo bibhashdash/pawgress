@@ -9,7 +9,6 @@ import {CornerDownRight, PlusCircle} from 'lucide-react-native'
 import {useFocusEffect} from "expo-router/react-navigation";
 import {Input} from "@/components/ui/input";
 import {Link, router} from "expo-router";
-import {isEmptyArray} from "@/lib/utils";
 
 interface BehaviourClass {
     id: string;
@@ -86,11 +85,11 @@ export default function Behaviours() {
                                     className="p-4 border border-white rounded-md bg-white mx-5 flex-row items-center justify-between">
                                     <Text>{item.title}</Text>
                                     {
-                                        item.subclasses && !isEmptyArray(item.subclasses)
+                                        (item.subclassCount ?? 0) > 0
                                         && <View className="flex-row gap-2">
                                             <CornerDownRight size="18" />
                                             <Text className="font-bold">
-                                                {item.subclasses.length}
+                                                {item.subclassCount}
                                             </Text>
                                         </View>
                                     }

@@ -11,6 +11,16 @@ export default defineSchema({
     behaviourClasses: defineTable({
         ownerId: v.string(), // identity.tokenIdentifier
         title: v.string(),
-        subclasses: v.optional(v.array(v.string())),
+        // Denormalized count of rows in the subclasses table, kept in sync
+        // by subclasses.create/remove — avoids an N+1 query per row just to
+        // show a count badge in the behaviours list.
+        subclassCount: v.number(),
     }).index("by_owner", ["ownerId"]),
+
+    subclasses: defineTable({
+        ownerId: v.string(), // identity.tokenIdentifier
+        behaviourClassId: v.id("behaviourClasses"),
+        name: v.string(),
+    }).index("by_owner", ["ownerId"])
+      .index("by_behaviourClass", ["behaviourClassId"]),
 });

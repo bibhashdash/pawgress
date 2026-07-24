@@ -1,4 +1,4 @@
-import {Text, View} from "react-native";
+import {ScrollView, Text, View} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {TabHeader} from "@/components/TabHeader";
 import {useQuery} from "convex/react";
@@ -40,7 +40,7 @@ export default function Home() {
                     </Link>
                 }
             />
-            <View className="my-4 gap-3 px-5">
+            <ScrollView className="my-4 gap-3 px-5">
                 <View>
                     <Text>Today's log count</Text>
                     <Text className="text-6xl mt-2">{todayLogs.length}</Text>
@@ -52,7 +52,7 @@ export default function Home() {
                                         {
                                             findTag(key as Id<"tags">)?.name.toLocaleUpperCase()
                                         }
-                                    </Text>standuo
+                                    </Text>
                                     <Text className="text-sm font-bold" style={{
                                         color: findTag(key as Id<"tags">)?.color
                                     }}>{value}</Text>
@@ -61,7 +61,7 @@ export default function Home() {
                         }
                     </View>
                 </View>
-            </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }

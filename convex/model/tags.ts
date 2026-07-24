@@ -5,13 +5,15 @@ import type { Id } from "../_generated/dataModel";
 // onboarding flow later, but a fixed starting set is fine for now.
 export const DEFAULT_TAG_NAMES = ["good", "watch", "issue", "incident"] as const;
 
-// Colors reference the app's Tailwind palette (see tailwind.config.js),
-// so tag chips match the rest of the UI's semantic colors out of the box.
+// Hex values, matching the app's Tailwind palette (see tailwind.config.js)
+// so tag chips line up with the rest of the UI's semantic colors. Stored
+// as hex rather than Tailwind class names since tags.color is set
+// directly as a background color, not resolved through Tailwind/NativeWind.
 const DEFAULT_TAG_COLORS: Record<(typeof DEFAULT_TAG_NAMES)[number], string> = {
-    good: "success",
-    watch: "amber-500",
-    issue: "accent",
-    incident: "destructive",
+    good: "#16a34a",
+    watch: "#ffdf20",
+    issue: "#EB5E28",
+    incident: "#dc2626",
 };
 
 // Inserts the default tag set for a settings row and returns how many were

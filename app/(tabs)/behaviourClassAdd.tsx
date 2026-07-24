@@ -1,4 +1,4 @@
-import {FlatList, View, TextInput} from "react-native";
+import {FlatList, View, TextInput, Alert} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {Text} from "@/components/ui/text";
@@ -103,9 +103,15 @@ export default function BehaviourClassAdd () {
     const [subClass, setSubClass] = useState<string>("");
     const [subClasses, setSubClasses] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string>();
     const createBehaviourClass = useMutation(api.behaviourClasses.create);
     const createSubclass = useMutation(api.subclasses.create);
+
+    const resetFormFields = () => {
+        setTitle("");
+        setSubClass("");
+        setSubClasses([]);
+        setIsLoading(false);
+    }
 
     useFocusEffect(
         useCallback(() => {
@@ -113,7 +119,6 @@ export default function BehaviourClassAdd () {
             setSubClass("");
             setSubClasses([]);
             setIsLoading(false);
-            setError(undefined);
         }, [])
     );
 
@@ -122,10 +127,38 @@ export default function BehaviourClassAdd () {
         createBehaviourClass({ title })
             .then(async (id) => {
                 await Promise.all(subClasses.map(name => createSubclass({ behaviourClassId: id, name })));
-                router.push({ pathname: "/(tabs)/behaviourClassDetails/[id]", params: { id } });
+                Alert.alert(
+                    "Success",
+                    "Class successfully created",
+                    [
+                        {
+                            text: 'Add another',
+                            onPress: () => resetFormFields(),
+                            style: 'default',
+                        },
+                        {
+                            text: 'View details',
+                            onPress: () => {
+                                router.push({ pathname: "/(tabs)/behaviourClassDetails/[id]", params: { id } });
+                            },
+                            style: 'cancel'
+                        }
+                    ]
+                );
             })
             .catch(
-                err => setError(err)
+                err => {
+                    Alert.alert(
+                        "Error",
+                        "There was an error creating this class",
+                        [
+                            {
+                                text: 'Ok',
+                                style: 'cancel',
+                            }
+                        ]
+                    );
+                }
             ).finally(() => setIsLoading(false))
     }
     return (

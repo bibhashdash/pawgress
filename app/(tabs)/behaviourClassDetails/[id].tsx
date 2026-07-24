@@ -87,7 +87,7 @@ export default function BehaviourClassDetails() {
         setIsDeleting(true)
         removeBehaviourClass({ id: behaviour._id })
             .then(() => {
-                router.back()
+                router.push("/(tabs)/behaviours")
             })
             .catch(() => {
                 setResult({

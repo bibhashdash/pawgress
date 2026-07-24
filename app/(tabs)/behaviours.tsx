@@ -19,10 +19,7 @@ interface BehaviourClass {
 export default function Behaviours() {
     const behaviours = useQuery(api.behaviourClasses.list)
     const createBehaviourClass = useMutation(api.behaviourClasses.create);
-    const [showAddClass, setShowAddClass] = useState(false);
     const [classTitle, setClassTitle] = useState<string>("");
-    const [classes, setClasses] = useState<BehaviourClass[]>([]);
-    const [expandedId, setExpandedId] = useState<string | null>(null);
     useFocusEffect(
         useCallback(() => {
             behaviours;
@@ -43,21 +40,6 @@ export default function Behaviours() {
                                     <PlusCircle color="#fff"/>
                                 </Link>
                             </View>
-                            {
-                                showAddClass
-                                && <View className="pt-2">
-                                    <Input onSubmitEditing={event => {
-                                        if (event.nativeEvent.text !== null) {
-                                            setClasses(prevState => [...prevState, {
-                                                id: Date.now().toString(),
-                                                title: event.nativeEvent.text
-                                            }])
-                                            createBehaviourClass({title: event.nativeEvent.text});
-                                        }
-                                    }} onChangeText={setClassTitle}
-                                           className="border-blue border-1 rounded-md h-[50]" value={classTitle}/>
-                                </View>
-                            }
                         </View>
                         <Text className="mb-2 px-5">Add, rename, or remove the categories and behaviors you log
                             against. Renaming relabels

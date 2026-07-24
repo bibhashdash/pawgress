@@ -2,12 +2,14 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireOwnerId } from "./model/auth";
 import { requireOwnedClass } from "./behaviourClasses";
-import type { MutationCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 
-// Shared ownership check for update/remove: confirms the row exists and
-// belongs to the caller before any mutation touches it.
-async function requireOwnedSubclass(ctx: MutationCtx, id: Id<"subclasses">, ownerId: string) {
+// Shared ownership check: confirms the row exists and belongs to the
+// caller. Exported so convex/logEntries.ts can verify a subclassId
+// actually belongs to the caller (and to the given behaviourClassId)
+// before logging against it.
+export async function requireOwnedSubclass(ctx: QueryCtx | MutationCtx, id: Id<"subclasses">, ownerId: string) {
     const existing = await ctx.db.get(id);
     if (!existing || existing.ownerId !== ownerId) {
         throw new Error("Subclass not found");

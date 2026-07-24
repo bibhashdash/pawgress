@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireOwnerId } from "./model/auth";
+import { seedDefaultTags } from "./model/tags";
 
 export const get = query({
     args: {},
@@ -9,6 +10,7 @@ export const get = query({
             _id: v.id("settings"),
             _creationTime: v.number(),
             ownerId: v.string(),
+            tagCount: v.number(),
         }),
         v.null(),
     ),
@@ -22,7 +24,8 @@ export const get = query({
 });
 
 // Get-or-create: settings is a per-user singleton, so callers just ensure()
-// it exists rather than running a separate create step.
+// it exists rather than running a separate create step. A brand-new row
+// gets seeded with the default tag set immediately.
 export const ensure = mutation({
     args: {},
     returns: v.id("settings"),
@@ -33,6 +36,10 @@ export const ensure = mutation({
             .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
             .unique();
         if (existing) return existing._id;
-        return await ctx.db.insert("settings", { ownerId });
+
+        const settingsId = await ctx.db.insert("settings", { ownerId, tagCount: 0 });
+        const tagCount = await seedDefaultTags(ctx, ownerId, settingsId);
+        await ctx.db.patch(settingsId, { tagCount });
+        return settingsId;
     },
 });

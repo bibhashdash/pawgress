@@ -42,6 +42,31 @@ export const list = query({
     },
 });
 
+// Unlike list(), not scoped to a single behaviourClassId — needed by
+// screens like the log list that resolve subclass names across every
+// class at once instead of one class at a time.
+export const listAll = query({
+    args: {},
+    returns: v.array(
+        v.object({
+            _id: v.id("subclasses"),
+            _creationTime: v.number(),
+            ownerId: v.string(),
+            behaviourClassId: v.id("behaviourClasses"),
+            name: v.string(),
+            deletedAt: v.optional(v.number()),
+        }),
+    ),
+    handler: async (ctx) => {
+        const ownerId = await requireOwnerId(ctx);
+        const rows = await ctx.db
+            .query("subclasses")
+            .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+            .collect();
+        return rows.filter((row) => row.deletedAt === undefined);
+    },
+});
+
 export const create = mutation({
     args: {
         behaviourClassId: v.id("behaviourClasses"),

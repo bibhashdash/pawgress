@@ -26,6 +26,12 @@ export const isTimestampForCurrentDay = (timestamp: number | null | undefined) =
     )
 }
 
+export const isTimestampWithinLastDays = (timestamp: number | null | undefined, days: number): boolean => {
+    if (timestamp === null || timestamp === undefined) return false
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000
+    return timestamp >= cutoff
+}
+
 export const formatDateTime = (date: Date) => {
     const datePart = date.toLocaleDateString(undefined, {day: "numeric", month: "short", year: "numeric"});
     const timePart = date.toLocaleTimeString(undefined, {hour: "2-digit", minute: "2-digit"});

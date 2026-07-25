@@ -1,38 +1,38 @@
-import {Alert, FlatList, Modal, Platform, Pressable, View} from "react-native";
-import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {Text} from "@/components/ui/text";
-import {Input} from "@/components/ui/input";
+import {Alert, FlatList, Modal, Platform, Pressable, Text, View} from "react-native";
 import {useMutation, useQuery} from "convex/react";
 import {api} from "@/convex/_generated/api";
-import {useCallback, useState} from "react";
-import {ChevronDown, Circle} from "lucide-react-native";
-import {cn, formatDateTime} from "@/lib/utils";
 import type {Id} from "@/convex/_generated/dataModel";
-import {useFocusEffect} from "expo-router/react-navigation";
-import DateTimePicker, {DateTimePickerAndroid} from "@react-native-community/datetimepicker";
+import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {router} from "expo-router";
+import {ChevronDown, Circle} from "lucide-react-native";
+import {useCallback, useState} from "react";
+import {cn, formatDateTime} from "@/lib/utils";
+import {useFocusEffect} from "expo-router/react-navigation";
+import {router, useLocalSearchParams} from "expo-router";
+import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
+import DateTimePicker, {DateTimePickerAndroid} from "@react-native-community/datetimepicker";
 
-
-export default function LogAdd() {
+export default function LogDetails() {
+    const {id} = useLocalSearchParams<{ id: Id<"logEntries"> }>()
+    const logEntry = useQuery(api.logEntries.get, {id: id as Id<"logEntries">})
     const classes = useQuery(api.behaviourClasses.list)
     const tags = useQuery(api.tags.list)
-    const addLogEntry = useMutation(api.logEntries.create);
+    const updateLogEntry = useMutation(api.logEntries.update);
 
-    const [categoryId, setCategoryId] = useState<Id<"behaviourClasses"> | null>(null);
+    const [categoryId, setCategoryId] = useState<Id<"behaviourClasses"> | null>(logEntry?.behaviourClassId ?? null);
     const subclasses = useQuery(api.subclasses.list, categoryId ? {behaviourClassId: categoryId} : "skip")
     const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
 
-    const [subclassId, setSubclassId] = useState<Id<"subclasses"> | null>(null);
+    const [subclassId, setSubclassId] = useState<Id<"subclasses"> | null>(logEntry?.subclassId ?? null);
     const [subclassPickerOpen, setSubclassPickerOpen] = useState(false);
 
-    const [tagId, setTagId] = useState<Id<"tags"> | null>(null);
+    const [tagId, setTagId] = useState<Id<"tags"> | null>(logEntry?.tagId ?? null);
     const [tagPickerOpen, setTagPickerOpen] = useState(false);
 
-    const [description, setDescription] = useState("");
+    const [description, setDescription] = useState<string>(logEntry?.description ?? "");
 
-    const [date, setDate] = useState(new Date());
+    const [date, setDate] = useState(logEntry ? new Date(logEntry.timestamp) : new Date())
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const openAndroidDateTimePicker = () => {
@@ -57,53 +57,46 @@ export default function LogAdd() {
     const selectedSubclass = subclasses?.find(item => item._id === subclassId);
     const selectedTag = tags?.find(item => item._id === tagId);
 
+    const resetFormFields = () => {
+        if (!logEntry) return;
+        setCategoryId(logEntry.behaviourClassId);
+        setSubclassId(logEntry.subclassId);
+        setTagId(logEntry.tagId)
+        setDate(new Date(logEntry.timestamp));
+        setDescription(logEntry.description ?? "");
+    }
+
     useFocusEffect(
         useCallback(() => {
             resetFormFields()
-        }, [])
+        }, [logEntry])
     );
-
-    const resetFormFields = () => {
-        setCategoryId(null);
-        setSubclassId(null);
-        setTagId(null)
-        setDate(new Date());
-        setDescription("");
-    }
 
     const handleSubmit = () => {
         setIsSubmitting(true)
-
         if (selectedCategory && selectedTag && selectedSubclass) {
-            addLogEntry({
+            updateLogEntry({
+                id: id as Id<"logEntries">,
                 behaviourClassId: selectedCategory._id,
                 subclassId: selectedSubclass._id,
                 timestamp: date.getTime(),
-                description: description,
+                description: description ?? "",
                 tagId: selectedTag._id,
-            }).then(id => {
+            }).then(() => {
                 Alert.alert(
                     "Success",
-                    "Class successfully created",
+                    "Entry successfully updated",
                     [
                         {
-                            text: 'Add another',
-                            onPress: () => resetFormFields(),
+                            text: 'Ok',
                             style: 'default',
-                        },
-                        {
-                            text: 'View details',
-                            onPress: () => {
-                                router.push({ pathname: "/(tabs)/logDetails/[id]", params: { id } });
-                            },
-                            style: 'cancel'
                         }
                     ]
                 );
             }).catch(() => {
                 Alert.alert(
                     "Error",
-                    "There was an error creating this entry",
+                    "There was an error updating this entry",
                     [
                         {
                             text: 'Ok',
@@ -116,6 +109,9 @@ export default function LogAdd() {
             })
         }
     }
+
+    if (!logEntry) return null;
+
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["bottom", "left", "right"]}>
             <KeyboardAwareScrollView
@@ -211,7 +207,7 @@ export default function LogAdd() {
                     }
                     loading={isSubmitting}
                     onPress={() => handleSubmit()}
-                    variant="primary" className="rounded-md mt-4">
+                    variant="primary" className="rounded-md mt-4 text-white">
                     <Text>Save</Text>
                 </Button>
             </KeyboardAwareScrollView>

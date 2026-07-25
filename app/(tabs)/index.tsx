@@ -35,7 +35,7 @@ export default function Home() {
             <TabHeader
                 title="Home"
                 right={
-                    <Link href={"/(tabs)/behaviourClassAdd"}>
+                    <Link href={"/(tabs)/logAdd"}>
                         <PlusCircle color="#EB5E28"/>
                     </Link>
                 }

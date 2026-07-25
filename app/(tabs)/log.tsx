@@ -6,7 +6,7 @@ import { Text } from "@/components/ui/text";
 export default function Log() {
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
-            <TabHeader title="Log" />
+            <TabHeader title="Logs" />
             <View className="flex-1 items-center justify-center px-5">
                 <Text className="text-center text-muted-foreground">
                     Recorded training sessions will show up here.

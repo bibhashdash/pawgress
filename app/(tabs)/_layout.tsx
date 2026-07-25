@@ -77,6 +77,32 @@ export default function TabLayout() {
                     ),
                 }}
             />
+            <Tabs.Screen
+                name="logAdd"
+                options={{
+                    href: null,
+                    title: "Add Log Entry",
+                    headerShown: true,
+                    headerLeft: () => (
+                        <Pressable onPress={() => router.back()} className="pl-4 pr-2">
+                            <ChevronLeft color="#403D39" size={24} />
+                        </Pressable>
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="logDetails/[id]"
+                options={{
+                    href: null,
+                    title: "Entry",
+                    headerShown: true,
+                    headerLeft: () => (
+                        <Pressable onPress={() => router.navigate("/(tabs)/log")} className="pl-4 pr-2">
+                            <ChevronLeft color="#403D39" size={24} />
+                        </Pressable>
+                    ),
+                }}
+            />
         </Tabs>
     );
 }

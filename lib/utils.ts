@@ -25,3 +25,9 @@ export const isTimestampForCurrentDay = (timestamp: number | null | undefined) =
             )
     )
 }
+
+export const formatDateTime = (date: Date) => {
+    const datePart = date.toLocaleDateString(undefined, {day: "numeric", month: "short", year: "numeric"});
+    const timePart = date.toLocaleTimeString(undefined, {hour: "2-digit", minute: "2-digit"});
+    return `${datePart}, ${timePart}`;
+}

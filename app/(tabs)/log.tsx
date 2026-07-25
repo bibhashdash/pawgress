@@ -1,14 +1,15 @@
-import {FlatList, Modal, Pressable, View} from "react-native";
+import {Alert, FlatList, Modal, Pressable, View} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {TabHeader} from "@/components/TabHeader";
 import {Text} from "@/components/ui/text";
-import {useQuery} from "convex/react";
+import {useMutation, useQuery} from "convex/react";
 import {api} from "@/convex/_generated/api";
 import {useState} from "react";
 import {Link, router} from "expo-router";
-import {Circle, PlusCircle} from "lucide-react-native";
+import {Circle, PlusCircle, Trash2, Upload} from "lucide-react-native";
 import {cn, formatDateTime, isTimestampForCurrentDay, isTimestampWithinLastDays} from "@/lib/utils";
 import type {Id} from "@/convex/_generated/dataModel";
+import {Button} from "@/components/ui/button";
 
 type DateRangeFilter = "today" | "week" | "all";
 
@@ -23,6 +24,7 @@ export default function Log() {
     const classes = useQuery(api.behaviourClasses.list);
     const subclasses = useQuery(api.subclasses.listAll);
     const tags = useQuery(api.tags.list);
+    const removeLogEntry = useMutation(api.logEntries.remove);
 
     const [categoryFilter, setCategoryFilter] = useState<Id<"behaviourClasses"> | null>(null);
     const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
@@ -49,18 +51,42 @@ export default function Log() {
 
     });
 
+    const handleDeleteLog = (id: Id<"logEntries">) => {
+        Alert.alert(
+            "Delete this log?",
+            "This action cannot be undone.",
+            [
+                {text: "Cancel", style: "cancel"},
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: () => {
+                        removeLogEntry({id}).catch(() => {
+                            Alert.alert("Error", "There was an error deleting this entry.");
+                        });
+                    },
+                },
+            ]
+        );
+    };
+
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
             <TabHeader
                 title="Logs"
                 right={
-                    <Link href={"/(tabs)/logAdd"}>
-                        <PlusCircle color="#EB5E28"/>
-                    </Link>
+                    <View className="flex-row gap-2 items-center">
+                        <Link href={"/(tabs)/logAdd"}>
+                            <PlusCircle color="#EB5E28"/>
+                        </Link>
+                        <Button variant="icon">
+                            <Upload />
+                        </Button>
+                    </View>
                 }
             />
 
-            <View className="flex-row flex-wrap gap-2 px-5 pb-3">
+            <View className="flex-row flex-wrap gap-2 px-5 pb-3 my-4">
                 <Pressable
                     onPress={() => setCategoryPickerOpen(true)}
                     className={cn(
@@ -126,7 +152,12 @@ export default function Log() {
                                 <Text className="font-semibold">{subclass?.name ?? "Unknown"}</Text>
                                 <Text className="text-sm text-muted-foreground">{behaviourClass?.title ?? "Unknown"}</Text>
                             </View>
-                            <Text className="text-xs text-muted-foreground">{formatDateTime(new Date(item.timestamp))}</Text>
+                            <View className="items-end gap-2">
+                                <Text className="text-xs text-muted-foreground">{formatDateTime(new Date(item.timestamp))}</Text>
+                                <Pressable onPress={() => handleDeleteLog(item._id)} hitSlop={8}>
+                                    <Trash2 size={16} color="#8C8983" />
+                                </Pressable>
+                            </View>
                         </Pressable>
                     );
                 }}

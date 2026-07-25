@@ -7,7 +7,6 @@ import {TabHeader} from "@/components/TabHeader";
 import {Text} from "@/components/ui/text";
 import {CornerDownRight, PlusCircle} from 'lucide-react-native'
 import {useFocusEffect} from "expo-router/react-navigation";
-import {Input} from "@/components/ui/input";
 import {Link, router} from "expo-router";
 
 interface BehaviourClass {
@@ -28,19 +27,16 @@ export default function Behaviours() {
 
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
-            <TabHeader title="Behaviours"/>
+            <TabHeader
+                title="Behaviours"
+                right={<Link href={"/(tabs)/behaviourClassAdd"}>
+                    <PlusCircle color="#EB5E28"/>
+                </Link>}
+            />
             <View className="my-4 gap-3">
 
                 <FlatList
                     ListHeaderComponent={() => <>
-                        <View className="bg-accent px-5 py-2 mb-2">
-                            <View className="flex-row justify-between">
-                                <Text className="text-lg text-white">Behaviour classes</Text>
-                                <Link href={"/(tabs)/behaviourClassAdd"}>
-                                    <PlusCircle color="#fff"/>
-                                </Link>
-                            </View>
-                        </View>
                         <Text className="mb-2 px-5">Add, rename, or remove the categories and behaviors you log
                             against. Renaming relabels
                             matching past logs (and re-syncs them); removing keeps the logs but drops the class

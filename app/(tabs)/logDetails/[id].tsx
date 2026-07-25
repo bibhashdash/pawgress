@@ -5,13 +5,14 @@ import {api} from "@/convex/_generated/api";
 import type {Id} from "@/convex/_generated/dataModel";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {ChevronDown, Circle} from "lucide-react-native";
+import {ChevronDown, ChevronLeft, Circle, PlusCircle, Upload} from "lucide-react-native";
 import {useCallback, useState} from "react";
 import {cn, formatDateTime} from "@/lib/utils";
 import {useFocusEffect} from "expo-router/react-navigation";
-import {router, useLocalSearchParams} from "expo-router";
+import {Link, router, useLocalSearchParams} from "expo-router";
 import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import DateTimePicker, {DateTimePickerAndroid} from "@react-native-community/datetimepicker";
+import {TabHeader} from "@/components/TabHeader";
 
 export default function LogDetails() {
     const {id} = useLocalSearchParams<{ id: Id<"logEntries"> }>()
@@ -113,7 +114,22 @@ export default function LogDetails() {
     if (!logEntry) return null;
 
     return (
-        <SafeAreaView className="flex-1 bg-background" edges={["bottom", "left", "right"]}>
+        <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
+            <TabHeader
+                title="Entry"
+                right={
+                    <View className="flex-row gap-2 items-center">
+                        <Link href={"/(tabs)/logAdd"}>
+                            <PlusCircle color="#EB5E28"/>
+                        </Link>
+                    </View>
+                }
+                left={
+                    <Pressable onPress={() => router.navigate("/(tabs)/log")} className="pr-2">
+                        <ChevronLeft color="#403D39" size={24} />
+                    </Pressable>
+                }
+            />
             <KeyboardAwareScrollView
                 className="px-5 mt-5"
                 bottomOffset={20}

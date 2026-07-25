@@ -9,16 +9,9 @@ import {CornerDownRight, PlusCircle} from 'lucide-react-native'
 import {useFocusEffect} from "expo-router/react-navigation";
 import {Link, router} from "expo-router";
 
-interface BehaviourClass {
-    id: string;
-    title: string;
-    subclasses?: string[];
-}
-
 export default function Behaviours() {
     const behaviours = useQuery(api.behaviourClasses.list)
-    const createBehaviourClass = useMutation(api.behaviourClasses.create);
-    const [classTitle, setClassTitle] = useState<string>("");
+
     useFocusEffect(
         useCallback(() => {
             behaviours;

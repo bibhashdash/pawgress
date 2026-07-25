@@ -1,11 +1,12 @@
 import {SafeAreaView} from "react-native-safe-area-context";
-import {Alert, FlatList, Modal, Platform, Pressable, Text, View} from "react-native";
+import {Alert, FlatList, Modal, Platform, Pressable, View} from "react-native";
+import {Text} from "@/components/ui/text";
 import {useMutation, useQuery} from "convex/react";
 import {api} from "@/convex/_generated/api";
 import type {Id} from "@/convex/_generated/dataModel";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {ChevronDown, ChevronLeft, Circle, PlusCircle, Upload} from "lucide-react-native";
+import {ChevronDown, ChevronLeft, Circle, Pencil, PlusCircle, Trash2Icon, Upload} from "lucide-react-native";
 import {useCallback, useState} from "react";
 import {cn, formatDateTime} from "@/lib/utils";
 import {useFocusEffect} from "expo-router/react-navigation";
@@ -20,6 +21,7 @@ export default function LogDetails() {
     const classes = useQuery(api.behaviourClasses.list)
     const tags = useQuery(api.tags.list)
     const updateLogEntry = useMutation(api.logEntries.update);
+    const removeLogEntry = useMutation(api.logEntries.remove);
 
     const [categoryId, setCategoryId] = useState<Id<"behaviourClasses"> | null>(logEntry?.behaviourClassId ?? null);
     const subclasses = useQuery(api.subclasses.list, categoryId ? {behaviourClassId: categoryId} : "skip")
@@ -36,6 +38,7 @@ export default function LogDetails() {
     const [date, setDate] = useState(logEntry ? new Date(logEntry.timestamp) : new Date())
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [editMode, setEditMode] = useState(false);
     const openAndroidDateTimePicker = () => {
         DateTimePickerAndroid.open({
             value: date,
@@ -70,6 +73,7 @@ export default function LogDetails() {
     useFocusEffect(
         useCallback(() => {
             resetFormFields()
+            setEditMode(false)
         }, [logEntry])
     );
 
@@ -84,6 +88,7 @@ export default function LogDetails() {
                 description: description ?? "",
                 tagId: selectedTag._id,
             }).then(() => {
+                setEditMode(false);
                 Alert.alert(
                     "Success",
                     "Entry successfully updated",
@@ -111,6 +116,27 @@ export default function LogDetails() {
         }
     }
 
+    const handleDeleteLog = () => {
+        Alert.alert(
+            "Delete this log?",
+            "This action cannot be undone.",
+            [
+                {text: "Cancel", style: "cancel"},
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: () => {
+                        removeLogEntry({id})
+                            .then(() => router.navigate("/(tabs)/log"))
+                            .catch(() => {
+                            Alert.alert("Error", "There was an error deleting this entry.");
+                        });
+                    },
+                },
+            ]
+        );
+    };
+
     if (!logEntry) return null;
 
     return (
@@ -118,10 +144,18 @@ export default function LogDetails() {
             <TabHeader
                 title="Entry"
                 right={
-                    <View className="flex-row gap-2 items-center">
+                    <View className="flex-row gap-4 items-center">
+                        {!editMode && (
+                            <Pressable onPress={() => setEditMode(true)}>
+                                <Pencil color="#403D39" size={20} />
+                            </Pressable>
+                        )}
                         <Link href={"/(tabs)/logAdd"}>
                             <PlusCircle color="#EB5E28"/>
                         </Link>
+                        <Button onPress={handleDeleteLog} variant="icon" className="m-0 p-0">
+                            <Trash2Icon />
+                        </Button>
                     </View>
                 }
                 left={
@@ -137,65 +171,90 @@ export default function LogDetails() {
             >
                 <View>
                     <Text className="mb-2">Category</Text>
-                    <Pressable
-                        disabled={!classes || isSubmitting}
-                        onPress={() => setCategoryPickerOpen(true)}
-                        className="rounded-md h-[50] w-full border border-input bg-white px-4 flex-row items-center justify-between"
-                    >
-                        <Text className={cn(!selectedCategory && "text-muted-foreground")}>
-                            {selectedCategory?.title ?? "Select a category"}
-                        </Text>
-                        <ChevronDown size={18} color="#8C8983" />
-                    </Pressable>
+                    {editMode ? (
+                        <Pressable
+                            disabled={!classes || isSubmitting}
+                            onPress={() => setCategoryPickerOpen(true)}
+                            className="rounded-md h-[50] w-full border border-input bg-white px-4 flex-row items-center justify-between"
+                        >
+                            <Text className={cn(!selectedCategory && "text-muted-foreground")}>
+                                {selectedCategory?.title ?? "Select a category"}
+                            </Text>
+                            <ChevronDown size={18} color="#8C8983" />
+                        </Pressable>
+                    ) : (
+                        <View className="rounded-md h-[50] w-full border border-input bg-white px-4 flex-row items-center">
+                            <Text>{selectedCategory?.title ?? "—"}</Text>
+                        </View>
+                    )}
                 </View>
 
                 <View className="mt-4">
                     <Text className="mb-2">Behaviour</Text>
-                    <Pressable
-                        disabled={!subclasses || isSubmitting }
-                        onPress={() => setSubclassPickerOpen(true)}
-                        className="rounded-md h-[50] w-full border border-input bg-white px-4 flex-row items-center justify-between"
-                    >
-                        <Text className={cn(!selectedSubclass && "text-muted-foreground")}>
-                            {selectedSubclass?.name ?? "Select a subclass"}
-                        </Text>
-                        <ChevronDown size={18} color="#8C8983" />
-                    </Pressable>
+                    {editMode ? (
+                        <Pressable
+                            disabled={!subclasses || isSubmitting }
+                            onPress={() => setSubclassPickerOpen(true)}
+                            className="rounded-md h-[50] w-full border border-input bg-white px-4 flex-row items-center justify-between"
+                        >
+                            <Text className={cn(!selectedSubclass && "text-muted-foreground")}>
+                                {selectedSubclass?.name ?? "Select a subclass"}
+                            </Text>
+                            <ChevronDown size={18} color="#8C8983" />
+                        </Pressable>
+                    ) : (
+                        <View className="rounded-md h-[50] w-full border border-input bg-white px-4 flex-row items-center">
+                            <Text>{selectedSubclass?.name ?? "—"}</Text>
+                        </View>
+                    )}
                 </View>
 
                 <View className="mt-4">
                     <Text className="mb-2">Tag</Text>
-                    <Pressable
-                        disabled={!tags || isSubmitting}
-                        onPress={() => setTagPickerOpen(true)}
-                        className="rounded-md h-[50] w-full border border-input bg-white px-4 flex-row items-center justify-between"
-                    >
-                        <Text className={cn(!selectedTag && "text-muted-foreground")}>
-                            {selectedTag?.name.toUpperCase() ?? "Select a tag"}
-                        </Text>
-                        <ChevronDown size={18} color="#8C8983" />
-                    </Pressable>
+                    {editMode ? (
+                        <Pressable
+                            disabled={!tags || isSubmitting}
+                            onPress={() => setTagPickerOpen(true)}
+                            className="rounded-md h-[50] w-full border border-input bg-white px-4 flex-row items-center justify-between"
+                        >
+                            <Text className={cn(!selectedTag && "text-muted-foreground")}>
+                                {selectedTag?.name.toUpperCase() ?? "Select a tag"}
+                            </Text>
+                            <ChevronDown size={18} color="#8C8983" />
+                        </Pressable>
+                    ) : (
+                        <View className="rounded-md h-[50] w-full border border-input bg-white px-4 flex-row items-center justify-between">
+                            <Text>{selectedTag?.name.toUpperCase() ?? "—"}</Text>
+                            {selectedTag && <Circle color={selectedTag.color} fill={selectedTag.color} />}
+                        </View>
+                    )}
                 </View>
 
                 <View className="mt-4">
                     <Text className="mb-2">Date</Text>
-                    {Platform.OS === "ios" ? (
-                        <DateTimePicker
-                            disabled={isSubmitting}
-                            value={date}
-                            mode="datetime"
-                            display="compact"
-                            onValueChange={(_event, selectedDate) => selectedDate && setDate(selectedDate)}
-                        />
+                    {editMode ? (
+                        Platform.OS === "ios" ? (
+                            <DateTimePicker
+                                disabled={isSubmitting}
+                                value={date}
+                                mode="datetime"
+                                display="compact"
+                                onValueChange={(_event, selectedDate) => selectedDate && setDate(selectedDate)}
+                            />
+                        ) : (
+                            <Pressable
+                                disabled={isSubmitting}
+                                onPress={openAndroidDateTimePicker}
+                                className="rounded-md h-[50] w-full border border-input bg-white px-4 flex-row items-center justify-between"
+                            >
+                                <Text>{formatDateTime(date)}</Text>
+                                <ChevronDown size={18} color="#8C8983" />
+                            </Pressable>
+                        )
                     ) : (
-                        <Pressable
-                            disabled={isSubmitting}
-                            onPress={openAndroidDateTimePicker}
-                            className="rounded-md h-[50] w-full border border-input bg-white px-4 flex-row items-center justify-between"
-                        >
+                        <View className="rounded-md h-[50] w-full border border-input bg-white px-4 flex-row items-center">
                             <Text>{formatDateTime(date)}</Text>
-                            <ChevronDown size={18} color="#8C8983" />
-                        </Pressable>
+                        </View>
                     )}
                 </View>
 
@@ -203,29 +262,52 @@ export default function LogDetails() {
 
                 <View className="mt-4">
                     <Text className="mb-2">Description</Text>
-                    <Input
-                        readOnly={isSubmitting}
-                        value={description}
-                        onChangeText={setDescription}
-                        multiline
-                        numberOfLines={4}
-                        textAlignVertical="top"
-                        className="rounded-md h-[100] w-full border border-input bg-white px-4 py-3"
-                    />
+                    {editMode ? (
+                        <Input
+                            readOnly={isSubmitting}
+                            value={description}
+                            onChangeText={setDescription}
+                            multiline
+                            numberOfLines={4}
+                            textAlignVertical="top"
+                            className="rounded-md h-[100] w-full border border-input bg-white px-4 py-3"
+                        />
+                    ) : (
+                        <View className="rounded-md h-[100] w-full border border-input bg-white px-4 py-3">
+                            <Text className={cn(!description && "text-muted-foreground")}>
+                                {description || "No description"}
+                            </Text>
+                        </View>
+                    )}
                 </View>
 
-                <Button
-                    disabled={
-                        !selectedCategory
-                        || !selectedSubclass
-                        || !selectedTag
-                        || isSubmitting
-                    }
-                    loading={isSubmitting}
-                    onPress={() => handleSubmit()}
-                    variant="primary" className="rounded-md mt-4 text-white">
-                    <Text>Save</Text>
-                </Button>
+                {editMode && (
+                    <View className="flex-row gap-3 mt-4">
+                        <Button
+                            variant="outline"
+                            className="flex-1 rounded-md"
+                            disabled={isSubmitting}
+                            onPress={() => {
+                                resetFormFields();
+                                setEditMode(false);
+                            }}
+                        >
+                            <Text>Cancel</Text>
+                        </Button>
+                        <Button
+                            disabled={
+                                !selectedCategory
+                                || !selectedSubclass
+                                || !selectedTag
+                                || isSubmitting
+                            }
+                            loading={isSubmitting}
+                            onPress={() => handleSubmit()}
+                            variant="primary" className="flex-1 rounded-md">
+                            <Text>Save</Text>
+                        </Button>
+                    </View>
+                )}
             </KeyboardAwareScrollView>
 
             <Modal

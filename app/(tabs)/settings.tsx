@@ -1,6 +1,7 @@
 import {SafeAreaView} from "react-native-safe-area-context";
 import {api} from "@/convex/_generated/api";
 import {TabHeader} from "@/components/TabHeader";
+import {useAuth, useUser} from "@clerk/expo";
 
 interface BehaviourClass {
     id: string;
@@ -9,6 +10,8 @@ interface BehaviourClass {
 }
 
 export default function Settings() {
+    const { isSignedIn } = useAuth();
+    const {user} = useUser();
 
 
     return (

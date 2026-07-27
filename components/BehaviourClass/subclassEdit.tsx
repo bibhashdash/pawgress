@@ -1,4 +1,5 @@
-import {TextInput, View, Text} from "react-native";
+import {TextInput, View} from "react-native";
+import {Text} from "@/components/ui/text";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {Button} from "@/components/ui/button";
 import {CheckIcon, Trash2Icon, X} from "lucide-react-native";

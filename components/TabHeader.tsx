@@ -15,7 +15,7 @@ export function TabHeader({
     <View className="h-14 flex-row items-center justify-between px-5">
             <View className="flex-row items-center">
                 {left}
-                <Text className="text-2xl font-bold">{title}</Text>
+                <Text className="text-2xl">{title}</Text>
             </View>
             {right}
         </View>

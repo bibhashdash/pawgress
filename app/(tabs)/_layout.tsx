@@ -15,8 +15,14 @@ export default function TabLayout() {
         <Tabs
             screenOptions={{
                 headerShown: false,
+                headerTitleStyle: {
+                    fontFamily: "Fredoka_500Medium",
+                },
                 tabBarActiveTintColor: "#EB5E28",
                 tabBarInactiveTintColor: "#403D39",
+                tabBarLabelStyle: {
+                    fontFamily: "Fredoka_500Medium",
+                },
                 tabBarStyle: {
                     backgroundColor: "#FFFCF2",
                     borderTopColor: "rgba(64, 61, 57, 0.15)",

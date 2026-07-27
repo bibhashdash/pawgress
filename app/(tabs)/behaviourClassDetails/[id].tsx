@@ -1,6 +1,7 @@
 import {useLocalSearchParams} from "expo-router/build/hooks";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {Alert, FlatList, Text, View} from "react-native";
+import {Alert, FlatList, View} from "react-native";
+import {Text} from "@/components/ui/text";
 import {useMutation, useQuery} from "convex/react";
 import {api} from "@/convex/_generated/api";
 import type {Id} from "@/convex/_generated/dataModel";

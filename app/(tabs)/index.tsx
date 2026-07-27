@@ -1,4 +1,5 @@
-import {ScrollView, Text, View} from "react-native";
+import {ScrollView, View} from "react-native";
+import {Text} from "@/components/ui/text";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {TabHeader} from "@/components/TabHeader";
 import {useQuery} from "convex/react";

@@ -12,7 +12,7 @@ function Input({
     return (
         <TextInput
             className={cn(
-                "h-12 rounded-lg border border-input bg-background px-4 text-base text-foreground",
+                "h-12 rounded-lg border border-input font-sans bg-background px-4 text-base text-foreground",
                 props.editable === false && "opacity-50",
                 className,
             )}

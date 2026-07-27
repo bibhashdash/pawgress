@@ -166,7 +166,11 @@ export default function Settings() {
                                     }
                                 </View>
                                 <View className="flex-row gap-2 flex-1">
-                                    <Button className="flex-1" variant="outline">
+                                    <Button onPress={() => {
+                                        setShowAddTag(false);
+                                        setNewTagName("")
+                                        setNewTagColor("")
+                                    }} className="flex-1" variant="outline">
                                         <Text>Cancel</Text>
                                     </Button>
                                     <Button onPress={addNewTag} disabled={!newTagName || !newTagColor} className="flex-1" variant="primary">

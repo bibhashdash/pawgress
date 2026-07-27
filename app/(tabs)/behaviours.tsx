@@ -53,13 +53,13 @@ export default function Behaviours() {
                                         pathname: "/(tabs)/behaviourClassDetails/[id]",
                                         params: { id: item._id}
                                     })}
-                                    className="p-4 border border-white rounded-md bg-white mx-5 flex-row items-center justify-between">
+                                    className="p-4 border border-input rounded-md bg-white mx-5 flex-row items-center justify-between">
                                     <Text>{item.title}</Text>
                                     {
                                         (item.subclassCount ?? 0) > 0
                                         && <View className="flex-row gap-2">
                                             <CornerDownRight size="18" />
-                                            <Text className="font-bold">
+                                            <Text className="font-bold text-sm">
                                                 {item.subclassCount}
                                             </Text>
                                         </View>

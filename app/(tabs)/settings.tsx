@@ -12,6 +12,7 @@ import {useFocusEffect} from "expo-router/react-navigation";
 import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import {Input} from "@/components/ui/input";
 import {TAG_COLOR_PRESETS} from "@/lib/tagColors";
+import {isStringBlank} from "@/lib/utils";
 export default function Settings() {
     const {user} = useUser();
     const [editVisible, setEditVisible] = useState(false);
@@ -20,6 +21,8 @@ export default function Settings() {
     const {signOut} = useAuth();
     const tags = useQuery(api.tags.list);
     const [showAddTag, setShowAddTag] = useState(false);
+    const [firstName, setFirstName] = useState(user?.firstName ?? "");
+    const [lastName, setLastName] = useState(user?.lastName ?? "");
     const [newTagName, setNewTagName] = useState<string>("")
     const [newTagColor, setNewTagColor] = useState<string>("#64748b");
     const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -50,6 +53,9 @@ export default function Settings() {
             setShowAddTag(false);
             setNewTagName("")
             setNewTagColor("")
+            setFirstName(user?.firstName ?? "")
+            setLastName(user?.lastName ?? "")
+            setEditVisible(false)
         }, [])
     );
 
@@ -78,6 +84,10 @@ export default function Settings() {
             })
     }
 
+    const updateUserDetails = () => {
+
+    }
+
     const handleSignOut = () => {
         Alert.alert("Sign out", "Are you sure you want to sign out?", [
             {text: "Cancel", style: "cancel"},
@@ -89,7 +99,7 @@ export default function Settings() {
             <TabHeader
                 title="Settings"
                 right={
-                    <Button variant="icon" onPress={handleSignOut}>
+                    <Button className="p-0" variant="icon" onPress={handleSignOut}>
                         <LogOut />
                     </Button>
                 }
@@ -102,31 +112,55 @@ export default function Settings() {
                 <View className="px-6 mt-4 gap-3">
                     <View className="items-center">
                         <Image src={user?.imageUrl} className="rounded-full w-[96] h-[96]"/>
+                        <Text className="text-base  text-primary">{user?.primaryEmailAddress?.emailAddress}</Text>
                     </View>
 
                     <View className="gap-4">
                         <View className="flex-row items-center justify-between">
                             <Text className="text-lg font-bold text-primary">Profile</Text>
-                            <Button className="p-0" variant="icon" onPress={() => setEditVisible(true)}>
-                                <EditIcon size={16} color="#22333B"/>
-                            </Button>
+                            {
+                                editVisible
+                                ? <Button className="p-0" variant="icon" onPress={() => {
+                                        setEditVisible(false)
+                                    setLastName(user?.lastName ?? "")
+                                    setFirstName(user?.firstName ?? "")
+                                    }}>
+                                        <X color="#22333B"/>
+                                    </Button>
+                                    : <Button className="p-0" variant="icon" onPress={() => setEditVisible(true)}>
+                                        <EditIcon color="#22333B"/>
+                                    </Button>
+                            }
 
                         </View>
 
                         <View className="gap-1">
                             <Text className="text-xs font-semibold text-muted-foreground">First name</Text>
-                            <Text className="text-base text-primary">{user?.firstName || "—"}</Text>
+                            <Input onChangeText={text => setFirstName(text)} value={firstName} readOnly={!editVisible} className={`rounded-md text-primary ${editVisible ? "bg-white" : ""}`} />
                         </View>
 
                         <View className="gap-1">
                             <Text className="text-xs font-semibold text-muted-foreground">Last name</Text>
-                            <Text className="text-base text-primary">{user?.lastName || "—"}</Text>
+                            <Input onChangeText={text => setLastName(text)} value={lastName} readOnly={!editVisible} className={`rounded-md text-primary ${editVisible ? "bg-white" : ""}`} />
                         </View>
+                        {
+                            editVisible && (
+                                <View className="flex-row gap-2 flex-1">
+                                    <Button onPress={() => {
+                                        setFirstName(user?.firstName ?? "")
+                                        setLastName(user?.lastName ?? "")
+                                        setEditVisible(false)
 
-                        <View className="gap-1">
-                            <Text className="text-xs font-semibold text-muted-foreground">Email</Text>
-                            <Text className="text-base text-primary">{user?.primaryEmailAddress?.emailAddress}</Text>
-                        </View>
+                                    }} className="flex-1" variant="outline">
+                                        <Text>Cancel</Text>
+                                    </Button>
+                                    <Button disabled={isStringBlank(firstName)} onPress={updateUserDetails} className="flex-1" variant="primary">
+                                        <Text className="text-white">Submit</Text>
+                                    </Button>
+
+                                </View>
+                            )
+                        }
                     </View>
 
                     <View className="gap-2 mt-4 flex-row justify-between">

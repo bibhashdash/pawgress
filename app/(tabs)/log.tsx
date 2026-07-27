@@ -75,11 +75,11 @@ export default function Log() {
             <TabHeader
                 title="Logs"
                 right={
-                    <View className="flex-row gap-2 items-center">
+                    <View className="flex-row gap-4 items-center">
                         <Link href={"/(tabs)/logAdd"}>
                             <PlusCircle color="#EB5E28"/>
                         </Link>
-                        <Button variant="icon">
+                        <Button className="p-0" variant="icon">
                             <Upload />
                         </Button>
                     </View>

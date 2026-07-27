@@ -1,10 +1,9 @@
 import {TextInput, View, Modal, Pressable, FlatList} from "react-native";
 import {Text} from "@/components/ui/text";
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Button} from "@/components/ui/button";
-import {CheckIcon, Circle, Trash2Icon, X, Square} from "lucide-react-native";
+import {CheckIcon, Trash2Icon, X, Square} from "lucide-react-native";
 import {Input} from "@/components/ui/input";
-import {useFocusEffect} from "expo-router/react-navigation";
 import {useMutation} from "convex/react";
 import {api} from "@/convex/_generated/api";
 import type {Doc} from "@/convex/_generated/dataModel";

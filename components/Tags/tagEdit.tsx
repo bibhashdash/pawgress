@@ -27,6 +27,7 @@ export const TagEdit = ({tag, onResult}: {
     const inputRef = useRef<TextInput>(null)
 
     useEffect(() => {
+        setEditMode(false)
         setNewTagName(tag.name)
         setNewTagColor(tag.color)
     }, []);

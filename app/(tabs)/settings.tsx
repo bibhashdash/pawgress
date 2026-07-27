@@ -2,18 +2,28 @@ import {SafeAreaView} from "react-native-safe-area-context";
 import {api} from "@/convex/_generated/api";
 import {TabHeader} from "@/components/TabHeader";
 import {useAuth, useUser} from "@clerk/expo";
-import {View, Image, Pressable, Text, Alert, FlatList, Modal} from "react-native";
-import {Circle, EditIcon, LogOut} from "lucide-react-native";
-import {useEffect, useState} from "react";
+import {View, Image, Text, Alert, Pressable} from "react-native";
+import {X, EditIcon, LogOut, PlusCircle, Square} from "lucide-react-native";
+import {useCallback, useEffect, useState} from "react";
 import {Button} from "@/components/ui/button";
-import {useQuery} from "convex/react";
+import {useMutation, useQuery} from "convex/react";
 import {TagEdit} from "@/components/Tags/tagEdit";
-
+import {useFocusEffect} from "expo-router/react-navigation";
+import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
+import {Input} from "@/components/ui/input";
+import {TAG_COLOR_PRESETS} from "@/lib/tagColors";
 export default function Settings() {
     const {user} = useUser();
     const [editVisible, setEditVisible] = useState(false);
+    const addTag = useMutation(api.tags.create)
+
     const {signOut} = useAuth();
     const tags = useQuery(api.tags.list);
+    const [showAddTag, setShowAddTag] = useState(false);
+    const [newTagName, setNewTagName] = useState<string>("")
+    const [newTagColor, setNewTagColor] = useState<string>("#64748b");
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+
     const [result, setResult] = useState<{
         label: string,
         message: string
@@ -35,6 +45,39 @@ export default function Settings() {
         }
     }, [result]);
 
+    useFocusEffect(
+        useCallback(() => {
+            setShowAddTag(false);
+            setNewTagName("")
+            setNewTagColor("")
+        }, [])
+    );
+
+    const addNewTag = () => {
+        setIsLoading(true)
+        addTag({
+            name: newTagName,
+            color: newTagColor ?? "#64748b",
+        }).then(() => {
+            setResult({
+                label: "Success",
+                message: "Tag successfully added"
+            })
+        })
+            .catch(() => {
+                setResult({
+                    label: "Error",
+                    message: "There was an error adding the tag"
+                })
+            })
+            .finally(() => {
+                setIsLoading(false)
+                setShowAddTag(false);
+                setNewTagName("")
+                setNewTagColor("")
+            })
+    }
+
     const handleSignOut = () => {
         Alert.alert("Sign out", "Are you sure you want to sign out?", [
             {text: "Cancel", style: "cancel"},
@@ -51,53 +94,98 @@ export default function Settings() {
                     </Button>
                 }
             />
-            <View className="px-6 mt-4 gap-6">
-                <FlatList
-                    ListHeaderComponent={
-                    <>
-                        <View className="items-center">
-                            <Image src={user?.imageUrl} className="rounded-full w-[96] h-[96]"/>
+            <KeyboardAwareScrollView
+                className="px-5 mt-5"
+                bottomOffset={20}
+                keyboardShouldPersistTaps="handled"
+            >
+                <View className="px-6 mt-4 gap-3">
+                    <View className="items-center">
+                        <Image src={user?.imageUrl} className="rounded-full w-[96] h-[96]"/>
+                    </View>
+
+                    <View className="gap-4">
+                        <View className="flex-row items-center justify-between">
+                            <Text className="text-lg font-bold text-primary">Profile</Text>
+                            <Button className="p-0" variant="icon" onPress={() => setEditVisible(true)}>
+                                <EditIcon size={16} color="#22333B"/>
+                            </Button>
+
                         </View>
 
-                        <View className="gap-4">
-                            <View className="flex-row items-center justify-between">
-                                <Text className="text-lg font-bold text-primary">Profile</Text>
-                                <Button className="p-0" variant="icon" onPress={() => setEditVisible(true)}>
-                                    <EditIcon size={16} color="#22333B"/>
-                                </Button>
-
-                            </View>
-
-                            <View className="gap-1">
-                                <Text className="text-xs font-semibold text-muted-foreground">First name</Text>
-                                <Text className="text-base text-primary">{user?.firstName || "—"}</Text>
-                            </View>
-
-                            <View className="gap-1">
-                                <Text className="text-xs font-semibold text-muted-foreground">Last name</Text>
-                                <Text className="text-base text-primary">{user?.lastName || "—"}</Text>
-                            </View>
-
-                            <View className="gap-1">
-                                <Text className="text-xs font-semibold text-muted-foreground">Email</Text>
-                                <Text className="text-base text-primary">{user?.primaryEmailAddress?.emailAddress}</Text>
-                            </View>
+                        <View className="gap-1">
+                            <Text className="text-xs font-semibold text-muted-foreground">First name</Text>
+                            <Text className="text-base text-primary">{user?.firstName || "—"}</Text>
                         </View>
 
-                        <View className="gap-4 mt-4">
-                            <Text className="text-lg font-bold text-primary">Tags</Text>
+                        <View className="gap-1">
+                            <Text className="text-xs font-semibold text-muted-foreground">Last name</Text>
+                            <Text className="text-base text-primary">{user?.lastName || "—"}</Text>
                         </View>
-                    </>
+
+                        <View className="gap-1">
+                            <Text className="text-xs font-semibold text-muted-foreground">Email</Text>
+                            <Text className="text-base text-primary">{user?.primaryEmailAddress?.emailAddress}</Text>
+                        </View>
+                    </View>
+
+                    <View className="gap-2 mt-4 flex-row justify-between">
+                        <Text className="text-lg font-bold text-primary">Tags</Text>
+                        {!showAddTag
+                            ? <Button variant="icon" className="p-0 m-0" onPress={() => setShowAddTag(true)}>
+                                <PlusCircle/>
+                            </Button>
+                            : <Button variant="icon" className="p-0 m-0" onPress={() => setShowAddTag(false)}>
+                                <X />
+                            </Button>
+                        }
+                    </View>
+
+                    {
+                        showAddTag
+                        && (
+                            <View className="gap-3 bg-popover border border-input rounded-md p-4">
+                                <Text className="font-semibold">Tag name</Text>
+                                <Input
+                                    className="rounded-md h-[50] w-full border border-input bg-white"
+                                    value={newTagName} onChangeText={setNewTagName}
+                                    onSubmitEditing={() => addNewTag()}
+                                />
+                                <Text className="font-semibold">Tag Color</Text>
+                                <View className="flex-row flex-wrap gap-3">
+                                    {
+                                        TAG_COLOR_PRESETS.map((color) => (
+                                            <Pressable key={color.hex} onPress={() => setNewTagColor(color.hex)}>
+                                                <Square
+                                                    strokeWidth={newTagColor === color.hex ? 1 : 0}
+                                                    stroke={newTagColor === color.hex ? "#000" : "" }
+                                                    size={40} color={color.hex} fill={color.hex}
+                                                />
+                                            </Pressable>
+                                        ))
+                                    }
+                                </View>
+                                <View className="flex-row gap-2 flex-1">
+                                    <Button className="flex-1" variant="outline">
+                                        <Text>Cancel</Text>
+                                    </Button>
+                                    <Button onPress={addNewTag} disabled={!newTagName || !newTagColor} className="flex-1" variant="primary">
+                                        <Text className="text-white">Submit</Text>
+                                    </Button>
+
+                                </View>
+                            </View>
+                        )
                     }
-                    data={tags}
-                    contentContainerClassName="gap-3"
 
-                    keyExtractor={(item) => item._id}
-                    renderItem={({item}) => (
-                        <TagEdit tag={item} onResult={setResult} />
-                    )}
-                />
-            </View>
+                    <View className="gap-3">
+                        {tags?.map((item) => (
+                            <TagEdit key={item._id} tag={item} onResult={setResult} />
+                        ))}
+                    </View>
+                </View>
+
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 }

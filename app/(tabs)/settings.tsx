@@ -26,6 +26,7 @@ export default function Settings() {
     const [newTagName, setNewTagName] = useState<string>("")
     const [newTagColor, setNewTagColor] = useState<string>("#64748b");
     const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [isUpdatingProfile, setIsUpdatingProfile] = useState<boolean>(false)
 
     const [result, setResult] = useState<{
         label: string,
@@ -85,7 +86,26 @@ export default function Settings() {
     }
 
     const updateUserDetails = () => {
-
+        setIsUpdatingProfile(true)
+        user?.update({
+            firstName,
+            lastName,
+        }).then(() => {
+            setResult({
+                label: "Success",
+                message: "Profile successfully updated"
+            })
+            setEditVisible(false)
+        })
+            .catch(() => {
+                setResult({
+                    label: "Error",
+                    message: "There was an error updating your profile"
+                })
+            })
+            .finally(() => {
+                setIsUpdatingProfile(false)
+            })
     }
 
     const handleSignOut = () => {
@@ -136,17 +156,17 @@ export default function Settings() {
 
                         <View className="gap-1">
                             <Text className="text-xs font-semibold text-muted-foreground">First name</Text>
-                            <Input onChangeText={text => setFirstName(text)} value={firstName} readOnly={!editVisible} className={`rounded-md text-primary ${editVisible ? "bg-white" : ""}`} />
+                            <Input onChangeText={text => setFirstName(text)} value={firstName} readOnly={!editVisible || isUpdatingProfile} className={`rounded-md text-primary ${editVisible ? "bg-white" : ""}`} />
                         </View>
 
                         <View className="gap-1">
                             <Text className="text-xs font-semibold text-muted-foreground">Last name</Text>
-                            <Input onChangeText={text => setLastName(text)} value={lastName} readOnly={!editVisible} className={`rounded-md text-primary ${editVisible ? "bg-white" : ""}`} />
+                            <Input onChangeText={text => setLastName(text)} value={lastName} readOnly={!editVisible || isUpdatingProfile} className={`rounded-md text-primary ${editVisible ? "bg-white" : ""}`} />
                         </View>
                         {
                             editVisible && (
                                 <View className="flex-row gap-2 flex-1">
-                                    <Button onPress={() => {
+                                    <Button disabled={isUpdatingProfile} onPress={() => {
                                         setFirstName(user?.firstName ?? "")
                                         setLastName(user?.lastName ?? "")
                                         setEditVisible(false)
@@ -154,7 +174,11 @@ export default function Settings() {
                                     }} className="flex-1" variant="outline">
                                         <Text>Cancel</Text>
                                     </Button>
-                                    <Button disabled={isStringBlank(firstName)} onPress={updateUserDetails} className="flex-1" variant="primary">
+                                    <Button
+                                        disabled={isStringBlank(firstName) || isUpdatingProfile}
+                                        loading={isUpdatingProfile}
+                                        onPress={updateUserDetails}
+                                        className="flex-1" variant="primary">
                                         <Text className="text-white">Submit</Text>
                                     </Button>
 

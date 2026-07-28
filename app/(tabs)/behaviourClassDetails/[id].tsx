@@ -1,19 +1,20 @@
 import {useLocalSearchParams} from "expo-router/build/hooks";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {FlatList, View} from "react-native";
+import {FlatList, Modal, Pressable, View} from "react-native";
 import {Text} from "@/components/ui/text";
 import {useMutation, useQuery} from "convex/react";
 import {api} from "@/convex/_generated/api";
 import type {Id} from "@/convex/_generated/dataModel";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {CheckIcon, CirclePlus, Trash2Icon, X} from "lucide-react-native";
+import {CheckIcon, ChevronLeft, CirclePlus, Trash2Icon, X} from "lucide-react-native";
 import {SubclassEdit} from "@/components/BehaviourClass/subclassEdit";
 import {useCallback, useEffect, useState} from "react";
 import {isStringBlank} from "@/lib/utils";
 import {useFocusEffect} from "expo-router/react-navigation";
 import {router} from "expo-router";
 import Toast from 'react-native-toast-message';
+import {TabHeader} from "@/components/TabHeader";
 
 export default function BehaviourClassDetails() {
     const {id} = useLocalSearchParams<{ id: string }>()
@@ -119,8 +120,20 @@ export default function BehaviourClassDetails() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-background" edges={["bottom", "left", "right"]}>
-
+        <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
+            <TabHeader
+                title="Behaviour Class"
+                right={
+                    <Button onPress={() => setDeleteMode(true)} variant="icon" className="p-0">
+                        <Trash2Icon color="#403D39" size={24} />
+                    </Button>
+                }
+                left={
+                    <Button onPress={() => router.back()} className="p-0 pr-2" variant="icon">
+                        <ChevronLeft color="#403D39" size={24} />
+                    </Button>
+                }
+            />
             <View className="px-5 mt-5">
                 <FlatList
                     contentContainerClassName="gap-2"
@@ -152,8 +165,8 @@ export default function BehaviourClassDetails() {
                                         </Button>
 
                                         {
-                                            (editMode || deleteMode)
-                                                ? <Button
+                                            (editMode)
+                                                && <Button
                                                     variant="icon" size="sm" className="p-0"
                                                     onPress={() => {
                                                         if (editMode) {
@@ -165,26 +178,9 @@ export default function BehaviourClassDetails() {
                                                     }}>
                                                     <X />
                                                 </Button>
-                                                : <Button onPress={() => setDeleteMode(true)} variant="icon" size="sm" className="p-0">
-                                                    <Trash2Icon/>
-                                                </Button>
                                         }
                                     </View>
                                 </View>
-                                {
-                                    deleteMode
-                                    && <View className="items-end gap-2 mt-3">
-                                        <Text>Remove this behaviour class?</Text>
-                                        <View className="flex-row gap-2">
-                                            <Button onPress={() => setDeleteMode(false)} variant="outline">
-                                                <Text>Cancel</Text>
-                                            </Button>
-                                            <Button loading={isDeleting} disabled={isDeleting} onPress={() => deleteClass()} variant="destructive">
-                                                <Text className="text-white">Confirm</Text>
-                                            </Button>
-                                        </View>
-                                    </View>
-                                }
                             </View>
                             <Text className="mb-2 mt-3">Subclasses</Text>
                             <View className="flex-row items-center gap-3">
@@ -216,6 +212,38 @@ export default function BehaviourClassDetails() {
                     keyExtractor={(item) => item._id}
                 />
             </View>
+            <Modal
+                visible={deleteMode}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setDeleteMode(false)}
+            >
+                <Pressable
+                    className="flex-1 bg-black/40 justify-end"
+                    onPress={() => setDeleteMode(false)}
+                >
+                    {/* No-op onPress so taps inside the sheet don't fall through to the backdrop above and close it */}
+                    <Pressable onPress={() => {}} className="bg-background rounded-t-xl p-5 pb-12 gap-4">
+                        <Text className="text-lg font-semibold">Delete this behaviour class?</Text>
+                        <Text className="text-muted-foreground">This action cannot be undone.</Text>
+                        <View className="flex-row gap-3">
+                            <Button
+                                onPress={() => setDeleteMode(false)}
+                                disabled={isDeleting}
+                                variant="outline" className="flex-1">
+                                <Text>Cancel</Text>
+                            </Button>
+                            <Button
+                                onPress={deleteClass}
+                                loading={isDeleting}
+                                disabled={isDeleting}
+                                variant="destructive" className="flex-1">
+                                <Text className="text-white">Delete</Text>
+                            </Button>
+                        </View>
+                    </Pressable>
+                </Pressable>
+            </Modal>
         </SafeAreaView>
     )
 }

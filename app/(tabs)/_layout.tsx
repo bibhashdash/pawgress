@@ -96,12 +96,6 @@ export default function TabLayout() {
                 options={{
                     href: null,
                     title: "Behaviour Class",
-                    headerShown: true,
-                    headerLeft: () => (
-                        <Pressable onPress={() => router.navigate("/(tabs)/behaviours")} className="pl-4 pr-2">
-                            <ChevronLeft color="#403D39" size={24} />
-                        </Pressable>
-                    ),
                 }}
             />
             <Tabs.Screen
@@ -122,12 +116,6 @@ export default function TabLayout() {
                 options={{
                     href: null,
                     title: "Entry",
-                    // headerShown: true,
-                    // headerLeft: () => (
-                    //     <Pressable onPress={() => router.navigate("/(tabs)/log")} className="pl-4 pr-2">
-                    //         <ChevronLeft color="#403D39" size={24} />
-                    //     </Pressable>
-                    // ),
                 }}
             />
         </Tabs>

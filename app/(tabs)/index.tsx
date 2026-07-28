@@ -1,12 +1,12 @@
-import {ScrollView, View, useWindowDimensions} from "react-native";
+import {Pressable, ScrollView, View, useWindowDimensions} from "react-native";
 import {Text} from "@/components/ui/text";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {TabHeader} from "@/components/TabHeader";
 import {useQuery} from "convex/react";
 import {api} from "@/convex/_generated/api";
-import {PlusCircle} from "lucide-react-native";
-import {Link} from "expo-router";
-import {isTimestampForCurrentDay} from "@/lib/utils";
+import {PlusCircle, Circle as CircleIcon} from "lucide-react-native";
+import {Link, router} from "expo-router";
+import {formatDateTime, isTimestampForCurrentDay} from "@/lib/utils";
 import {Id} from "@/convex/_generated/dataModel";
 import {Fragment} from "react";
 import Svg, {Circle, Polyline} from "react-native-svg";
@@ -18,12 +18,36 @@ function isSameDay(timestamp: number, date: Date) {
         && other.getFullYear() === date.getFullYear();
 }
 
+function dayKey(date: Date) {
+    return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+// Consecutive days (ending today) with at least one log. If today has no
+// log yet, still counts the streak through yesterday — today just hasn't
+// "broken" it yet.
+function calculateStreak(logs: {timestamp: number}[]): number {
+    const daysWithLogs = new Set(logs.map(log => dayKey(new Date(log.timestamp))));
+    const cursor = new Date();
+    if (!daysWithLogs.has(dayKey(cursor))) {
+        cursor.setDate(cursor.getDate() - 1);
+        if (!daysWithLogs.has(dayKey(cursor))) return 0;
+    }
+    let streak = 0;
+    while (daysWithLogs.has(dayKey(cursor))) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+}
+
 export default function Home() {
     const {width: screenWidth} = useWindowDimensions();
     const allLogs = useQuery(api.logEntries.list)
     const tags = useQuery(api.tags.list)
+    const classes = useQuery(api.behaviourClasses.list)
+    const subclasses = useQuery(api.subclasses.listAll)
 
-    if (!allLogs || !tags) return null;
+    if (!allLogs || !tags || !classes || !subclasses) return null;
     const todayLogs = allLogs
         .filter(log => isTimestampForCurrentDay(log.timestamp))
 
@@ -41,11 +65,25 @@ export default function Home() {
         return tags?.find(item => item._id === tagId)
     }
 
+    // allLogs is already ordered desc by timestamp (see logEntries.list).
+    const recentLogs = allLogs.slice(0, 5);
+
     const last7Days = Array.from({length: 7}, (_, i) => {
         const date = new Date();
         date.setDate(date.getDate() - (6 - i));
         return date;
     });
+
+    const streak = calculateStreak(allLogs);
+
+    const thisWeekLogs = allLogs.filter(log => last7Days.some(date => isSameDay(log.timestamp, date)));
+    const classCounts = thisWeekLogs.reduce<Record<Id<"behaviourClasses">, number>>((acc, log) => {
+        acc[log.behaviourClassId] = (acc[log.behaviourClassId] ?? 0) + 1;
+        return acc;
+    }, {} as Record<Id<"behaviourClasses">, number>);
+    const [mostActiveClassId, mostActiveCount] =
+        Object.entries(classCounts).sort((a, b) => b[1] - a[1])[0] ?? [null, 0];
+    const mostActiveClass = classes.find(item => item._id === mostActiveClassId);
 
     const tagLineDataSets = tags.map(tag => ({
         color: tag.color,
@@ -55,7 +93,7 @@ export default function Home() {
     }));
 
     const chartWidth = screenWidth - 40;
-    const chartHeight = 120;
+    const chartHeight = 200;
     const chartPaddingX = 15;
     const chartPaddingTop = 10;
     const plotWidth = chartWidth - chartPaddingX * 2;
@@ -79,7 +117,7 @@ export default function Home() {
                 <View>
                     <Text>Today's log count</Text>
                     <Text className="text-6xl mt-2">{todayLogs.length}</Text>
-                    <View className="flex-row gap-4 items-center flex-wrap">
+                    <View className="flex-row gap-4 items-center flex-wrap mt-3">
                         {
                             Object.entries(breakdownByTags).map(([key, value]) => (
                                 <View key={key} className="gap-1 items-center">
@@ -94,6 +132,26 @@ export default function Home() {
                                 </View>
                             ))
                         }
+                    </View>
+                </View>
+
+                <View className="flex-row gap-4 mt-6">
+                    <View className="flex-1 border border-input rounded-md p-4 bg-white">
+                        <Text className="text-xs text-muted-foreground">Streak</Text>
+                        <Text className="text-2xl font-semibold mt-1">
+                            {streak} {streak === 1 ? "day" : "days"}
+                        </Text>
+                    </View>
+                    <View className="flex-1 border border-input rounded-md p-4 bg-white">
+                        <Text className="text-xs text-muted-foreground">Most active</Text>
+                        <Text className="text-base font-semibold mt-1" numberOfLines={1}>
+                            {mostActiveClass?.title ?? "—"}
+                        </Text>
+                        {mostActiveClass && (
+                            <Text className="text-xs text-muted-foreground">
+                                {mostActiveCount} {mostActiveCount === 1 ? "log" : "logs"} this week
+                            </Text>
+                        )}
                     </View>
                 </View>
 
@@ -124,6 +182,40 @@ export default function Home() {
                                 {date.toLocaleDateString(undefined, {weekday: "short"})}
                             </Text>
                         ))}
+                    </View>
+                </View>
+
+                <View className="mt-6">
+                    <View className="flex-row justify-between items-center mb-2">
+                        <Text className="font-semibold">Recent logs</Text>
+                        <Pressable onPress={() => router.push("/(tabs)/log")}>
+                            <Text className="text-sm text-accent font-semibold">View all</Text>
+                        </Pressable>
+                    </View>
+                    <View className="gap-2">
+                        {recentLogs.length === 0 ? (
+                            <Text className="text-muted-foreground">No logs yet.</Text>
+                        ) : (
+                            recentLogs.map((log) => {
+                                const tag = findTag(log.tagId);
+                                const subclass = subclasses.find(item => item._id === log.subclassId);
+                                const behaviourClass = classes.find(item => item._id === log.behaviourClassId);
+                                return (
+                                    <Pressable
+                                        key={log._id}
+                                        onPress={() => router.push({pathname: "/(tabs)/logDetails/[id]", params: {id: log._id}})}
+                                        className="rounded-md border border-input bg-white p-4 flex-row items-center gap-3"
+                                    >
+                                        <CircleIcon size={10} color={tag?.color ?? "#8C8983"} fill={tag?.color ?? "#8C8983"} />
+                                        <View className="flex-1">
+                                            <Text className="font-semibold">{subclass?.name ?? "Unknown"}</Text>
+                                            <Text className="text-sm text-muted-foreground">{behaviourClass?.title ?? "Unknown"}</Text>
+                                        </View>
+                                        <Text className="text-xs text-muted-foreground">{formatDateTime(new Date(log.timestamp))}</Text>
+                                    </Pressable>
+                                );
+                            })
+                        )}
                     </View>
                 </View>
             </ScrollView>

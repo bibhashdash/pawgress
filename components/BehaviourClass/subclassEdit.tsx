@@ -1,4 +1,4 @@
-import {TextInput, View} from "react-native";
+import {Modal, Pressable, TextInput, View} from "react-native";
 import {Text} from "@/components/ui/text";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {Button} from "@/components/ui/button";
@@ -103,7 +103,7 @@ export const SubclassEdit = ({subclass, onResult}: {
                     </Button>
 
                     {
-                        (editMode || deleteMode)
+                        (editMode)
                             ? <Button
                                 variant="icon" size="sm" className="p-0"
                                 onPress={() => {
@@ -122,20 +122,38 @@ export const SubclassEdit = ({subclass, onResult}: {
                     }
                 </View>
             </View>
-            {
-                deleteMode
-                && <View className="items-end gap-2">
-                    <Text>Remove subclass?</Text>
-                    <View className="flex-row gap-2">
-                        <Button onPress={() => setDeleteMode(false)} variant="outline">
-                            <Text>Cancel</Text>
-                        </Button>
-                        <Button loading={isDeleting} disabled={isDeleting} onPress={() => deleteSubclass()} variant="destructive">
-                            <Text className="text-white">Confirm</Text>
-                        </Button>
-                    </View>
-                </View>
-            }
+            <Modal
+                visible={deleteMode}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setDeleteMode(false)}
+            >
+                <Pressable
+                    className="flex-1 bg-black/40 justify-end"
+                    onPress={() => setDeleteMode(false)}
+                >
+                    {/* No-op onPress so taps inside the sheet don't fall through to the backdrop above and close it */}
+                    <Pressable onPress={() => {}} className="bg-background rounded-t-xl p-5 pb-12 gap-4">
+                        <Text className="text-lg font-semibold">Delete this subclass?</Text>
+                        <Text className="text-muted-foreground">This action cannot be undone.</Text>
+                        <View className="flex-row gap-3">
+                            <Button
+                                onPress={() => setDeleteMode(false)}
+                                disabled={isDeleting}
+                                variant="outline" className="flex-1">
+                                <Text>Cancel</Text>
+                            </Button>
+                            <Button
+                                onPress={deleteSubclass}
+                                loading={isDeleting}
+                                disabled={isDeleting}
+                                variant="destructive" className="flex-1">
+                                <Text className="text-white">Delete</Text>
+                            </Button>
+                        </View>
+                    </Pressable>
+                </Pressable>
+            </Modal>
         </View>
     )
 }

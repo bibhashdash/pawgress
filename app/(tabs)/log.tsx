@@ -6,11 +6,12 @@ import {useMutation, useQuery} from "convex/react";
 import {api} from "@/convex/_generated/api";
 import {useState} from "react";
 import {Link, router} from "expo-router";
-import {Circle, PlusCircle, Trash2, Upload} from "lucide-react-native";
+import {Circle, CircleDot, LockIcon, PlusCircle, Trash2, Upload} from "lucide-react-native";
 import {cn, formatDateTime, isTimestampForCurrentDay, isTimestampWithinLastDays} from "@/lib/utils";
 import type {Id} from "@/convex/_generated/dataModel";
 import {Button} from "@/components/ui/button";
 import Toast from "react-native-toast-message";
+import {PremiumModal} from "@/components/PremiumModal";
 
 type DateRangeFilter = "today" | "week" | "all";
 
@@ -37,7 +38,7 @@ export default function Log() {
 
     const [pendingDeleteId, setPendingDeleteId] = useState<Id<"logEntries"> | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-
+    const [showPremiumModal, setShowPremiumModal] = useState(false);
     if (!logs || !classes || !subclasses || !tags) return null;
 
     const classById = new Map(classes.map((item) => [item._id, item]));
@@ -77,9 +78,11 @@ export default function Log() {
                         <Link href={"/(tabs)/logAdd"}>
                             <PlusCircle color="#EB5E28"/>
                         </Link>
-                        <Button className="p-0" variant="icon">
-                            <Upload />
-                        </Button>
+                        <View>
+                            <Button onPress={() => setShowPremiumModal(true)} className="p-0" variant="icon">
+                                <Upload />
+                            </Button>
+                        </View>
                     </View>
                 }
             />
@@ -292,6 +295,13 @@ export default function Log() {
                     </Pressable>
                 </Pressable>
             </Modal>
+
+
+            <PremiumModal
+                setShowPremiumModal={setShowPremiumModal}
+                showPremiumModal={showPremiumModal}
+                subdeck="Bulk import excel sheets and other popular tabular formats - and get a host of premium features - when you sign up to a paid plan."
+            />
         </SafeAreaView>
     );
 }

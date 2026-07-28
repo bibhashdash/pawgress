@@ -44,10 +44,18 @@
       "expo-secure-store",
       "@clerk/expo",
       "@react-native-community/datetimepicker",
-      "expo-font"
+      "expo-font",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f3e9b058-79de-4918-bf73-8240c960a888"
+      }
+    },
+    "owner": "bibhashdash1234"
   }
 }

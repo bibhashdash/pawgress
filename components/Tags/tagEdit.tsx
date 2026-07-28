@@ -104,7 +104,7 @@ export const TagEdit = ({tag, onResult}: {
                     </Button>
 
                     {
-                        (editMode || deleteMode)
+                        (editMode)
                             ? <Button
                                 variant="icon" size="sm" className="p-0"
                                 onPress={() => {
@@ -123,20 +123,6 @@ export const TagEdit = ({tag, onResult}: {
                     }
                 </View>
             </View>
-            {
-                deleteMode
-                && <View className="items-end gap-2">
-                    <Text>Remove tag?</Text>
-                    <View className="flex-row gap-2">
-                        <Button onPress={() => setDeleteMode(false)} variant="outline">
-                            <Text>Cancel</Text>
-                        </Button>
-                        <Button loading={isDeleting} disabled={isDeleting} onPress={() => deleteTag()} variant="destructive">
-                            <Text className="text-white">Confirm</Text>
-                        </Button>
-                    </View>
-                </View>
-            }
             <Modal
                 visible={colorPickerOpen}
                 transparent
@@ -173,6 +159,39 @@ export const TagEdit = ({tag, onResult}: {
                                 </Pressable>
                             )}
                         />
+                    </Pressable>
+                </Pressable>
+            </Modal>
+
+            <Modal
+                visible={deleteMode}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setDeleteMode(false)}
+            >
+                <Pressable
+                    className="flex-1 bg-black/40 justify-end"
+                    onPress={() => setDeleteMode(false)}
+                >
+                    {/* No-op onPress so taps inside the sheet don't fall through to the backdrop above and close it */}
+                    <Pressable onPress={() => {}} className="bg-background rounded-t-xl p-5 pb-12 gap-4">
+                        <Text className="text-lg font-semibold">Delete this behaviour class?</Text>
+                        <Text className="text-muted-foreground">This action cannot be undone.</Text>
+                        <View className="flex-row gap-3">
+                            <Button
+                                onPress={() => setDeleteMode(false)}
+                                disabled={isDeleting}
+                                variant="outline" className="flex-1">
+                                <Text>Cancel</Text>
+                            </Button>
+                            <Button
+                                onPress={deleteTag}
+                                loading={isDeleting}
+                                disabled={isDeleting}
+                                variant="destructive" className="flex-1">
+                                <Text className="text-white">Delete</Text>
+                            </Button>
+                        </View>
                     </Pressable>
                 </Pressable>
             </Modal>

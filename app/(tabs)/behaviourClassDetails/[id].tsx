@@ -1,6 +1,6 @@
 import {useLocalSearchParams} from "expo-router/build/hooks";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {Alert, FlatList, View} from "react-native";
+import {FlatList, View} from "react-native";
 import {Text} from "@/components/ui/text";
 import {useMutation, useQuery} from "convex/react";
 import {api} from "@/convex/_generated/api";
@@ -45,17 +45,6 @@ export default function BehaviourClassDetails() {
                 type: result.label,
                 text1: result.message,
             })
-            // Alert.alert(
-            //     result.label,
-            //     result.message,
-            //     [
-            //         {
-            //             text: 'Ok',
-            //             onPress: () => setResult(null),
-            //             style: 'default',
-            //         },
-            //     ]
-            // );
         }
     }, [result]);
     useFocusEffect(

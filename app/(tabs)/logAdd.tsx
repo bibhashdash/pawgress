@@ -1,4 +1,4 @@
-import {Alert, FlatList, Modal, Platform, Pressable, View} from "react-native";
+import {FlatList, Modal, Platform, Pressable, View} from "react-native";
 import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {Text} from "@/components/ui/text";
@@ -36,6 +36,7 @@ export default function LogAdd() {
     const [date, setDate] = useState(new Date());
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [createdId, setCreatedId] = useState<Id<"logEntries"> | null>(null);
     const openAndroidDateTimePicker = () => {
         DateTimePickerAndroid.open({
             value: date,
@@ -61,6 +62,7 @@ export default function LogAdd() {
     useFocusEffect(
         useCallback(() => {
             resetFormFields()
+            setCreatedId(null)
         }, [])
     );
 
@@ -83,24 +85,7 @@ export default function LogAdd() {
                 description: description,
                 tagId: selectedTag._id,
             }).then(id => {
-                Alert.alert(
-                    "Success",
-                    "Class successfully created",
-                    [
-                        {
-                            text: 'Add another',
-                            onPress: () => resetFormFields(),
-                            style: 'default',
-                        },
-                        {
-                            text: 'View details',
-                            onPress: () => {
-                                router.push({ pathname: "/(tabs)/logDetails/[id]", params: { id } });
-                            },
-                            style: 'cancel'
-                        }
-                    ]
-                );
+                setCreatedId(id);
             }).catch(() => {
                 Toast.show({
                     type: "error",
@@ -111,6 +96,18 @@ export default function LogAdd() {
             })
         }
     }
+
+    const handleAddAnother = () => {
+        setCreatedId(null);
+        resetFormFields();
+    };
+
+    const handleViewDetails = () => {
+        if (!createdId) return;
+        const id = createdId;
+        setCreatedId(null);
+        router.push({ pathname: "/(tabs)/logDetails/[id]", params: { id } });
+    };
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["bottom", "left", "right"]}>
             <KeyboardAwareScrollView
@@ -324,6 +321,31 @@ export default function LogAdd() {
                                 </Pressable>
                             )}
                         />
+                    </Pressable>
+                </Pressable>
+            </Modal>
+
+            <Modal
+                visible={createdId !== null}
+                transparent
+                animationType="slide"
+                onRequestClose={handleAddAnother}
+            >
+                <Pressable
+                    className="flex-1 bg-black/40 justify-end"
+                    onPress={handleAddAnother}
+                >
+                    {/* No-op onPress so taps inside the sheet don't fall through to the backdrop above and close it */}
+                    <Pressable onPress={() => {}} className="bg-background rounded-t-xl p-5 pb-12 gap-4">
+                        <Text className="text-lg font-semibold">Entry successfully created</Text>
+                        <View className="flex-row gap-3">
+                            <Button onPress={handleAddAnother} variant="outline" className="flex-1">
+                                <Text>Add another</Text>
+                            </Button>
+                            <Button onPress={handleViewDetails} variant="primary" className="flex-1">
+                                <Text className="text-white">View details</Text>
+                            </Button>
+                        </View>
                     </Pressable>
                 </Pressable>
             </Modal>

@@ -1,4 +1,4 @@
-import {FlatList, View, TextInput, Alert} from "react-native";
+import {FlatList, View, TextInput, Modal, Pressable} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {Text} from "@/components/ui/text";
@@ -11,6 +11,7 @@ import {api} from "@/convex/_generated/api";
 import {router} from "expo-router";
 import {useFocusEffect} from "expo-router/react-navigation";
 import Toast from "react-native-toast-message";
+import type {Id} from "@/convex/_generated/dataModel";
 
 // Local-only row: no api calls here — save/delete just update the parent's
 // in-memory subClasses array. The real create mutation only fires once,
@@ -104,6 +105,7 @@ export default function BehaviourClassAdd () {
     const [subClass, setSubClass] = useState<string>("");
     const [subClasses, setSubClasses] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [createdId, setCreatedId] = useState<Id<"behaviourClasses"> | null>(null);
     const createBehaviourClass = useMutation(api.behaviourClasses.create);
     const createSubclass = useMutation(api.subclasses.create);
 
@@ -120,6 +122,7 @@ export default function BehaviourClassAdd () {
             setSubClass("");
             setSubClasses([]);
             setIsLoading(false);
+            setCreatedId(null);
         }, [])
     );
 
@@ -128,24 +131,7 @@ export default function BehaviourClassAdd () {
         createBehaviourClass({ title })
             .then(async (id) => {
                 await Promise.all(subClasses.map(name => createSubclass({ behaviourClassId: id, name })));
-                Alert.alert(
-                    "Success",
-                    "Class successfully created",
-                    [
-                        {
-                            text: 'Add another',
-                            onPress: () => resetFormFields(),
-                            style: 'default',
-                        },
-                        {
-                            text: 'View details',
-                            onPress: () => {
-                                router.push({ pathname: "/(tabs)/behaviourClassDetails/[id]", params: { id } });
-                            },
-                            style: 'cancel'
-                        }
-                    ]
-                );
+                setCreatedId(id);
             })
             .catch(
                 err => {
@@ -156,6 +142,18 @@ export default function BehaviourClassAdd () {
                 }
             ).finally(() => setIsLoading(false))
     }
+
+    const handleAddAnother = () => {
+        setCreatedId(null);
+        resetFormFields();
+    };
+
+    const handleViewDetails = () => {
+        if (!createdId) return;
+        const id = createdId;
+        setCreatedId(null);
+        router.push({ pathname: "/(tabs)/behaviourClassDetails/[id]", params: { id } });
+    };
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["bottom", "left", "right"]}>
 
@@ -220,6 +218,31 @@ export default function BehaviourClassAdd () {
                     keyExtractor={(_, index) => index.toString()}
                 />
             </View>
+
+            <Modal
+                visible={createdId !== null}
+                transparent
+                animationType="slide"
+                onRequestClose={handleAddAnother}
+            >
+                <Pressable
+                    className="flex-1 bg-black/40 justify-end"
+                    onPress={handleAddAnother}
+                >
+                    {/* No-op onPress so taps inside the sheet don't fall through to the backdrop above and close it */}
+                    <Pressable onPress={() => {}} className="bg-background rounded-t-xl p-5 pb-12 gap-4">
+                        <Text className="text-lg font-semibold">Class successfully created</Text>
+                        <View className="flex-row gap-3">
+                            <Button onPress={handleAddAnother} variant="outline" className="flex-1">
+                                <Text>Add another</Text>
+                            </Button>
+                            <Button onPress={handleViewDetails} variant="primary" className="flex-1">
+                                <Text className="text-white">View details</Text>
+                            </Button>
+                        </View>
+                    </Pressable>
+                </Pressable>
+            </Modal>
         </SafeAreaView>
     )
 }

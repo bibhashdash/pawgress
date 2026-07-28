@@ -1,5 +1,5 @@
 import {SafeAreaView} from "react-native-safe-area-context";
-import {Alert, FlatList, Modal, Platform, Pressable, View} from "react-native";
+import {FlatList, Modal, Platform, Pressable, View} from "react-native";
 import {Text} from "@/components/ui/text";
 import {useMutation, useQuery} from "convex/react";
 import {api} from "@/convex/_generated/api";
@@ -40,6 +40,8 @@ export default function LogDetails() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editMode, setEditMode] = useState(false);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const openAndroidDateTimePicker = () => {
         DateTimePickerAndroid.open({
             value: date,
@@ -106,24 +108,16 @@ export default function LogDetails() {
     }
 
     const handleDeleteLog = () => {
-        Alert.alert(
-            "Delete this log?",
-            "This action cannot be undone.",
-            [
-                {text: "Cancel", style: "cancel"},
-                {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: () => {
-                        removeLogEntry({id})
-                            .then(() => router.navigate("/(tabs)/log"))
-                            .catch(() => {
-                            Toast.show({type: "error", text1: "There was an error deleting this entry."});
-                        });
-                    },
-                },
-            ]
-        );
+        setIsDeleting(true);
+        removeLogEntry({id})
+            .then(() => router.navigate("/(tabs)/log"))
+            .catch(() => {
+                Toast.show({type: "error", text1: "There was an error deleting this entry."});
+            })
+            .finally(() => {
+                setIsDeleting(false);
+                setDeleteConfirmOpen(false);
+            });
     };
 
     if (!logEntry) return null;
@@ -142,7 +136,7 @@ export default function LogDetails() {
                         <Link href={"/(tabs)/logAdd"}>
                             <PlusCircle color="#EB5E28"/>
                         </Link>
-                        <Button onPress={handleDeleteLog} variant="icon" className="m-0 p-0">
+                        <Button onPress={() => setDeleteConfirmOpen(true)} variant="icon" className="m-0 p-0">
                             <Trash2Icon />
                         </Button>
                     </View>
@@ -412,6 +406,39 @@ export default function LogDetails() {
                                 </Pressable>
                             )}
                         />
+                    </Pressable>
+                </Pressable>
+            </Modal>
+
+            <Modal
+                visible={deleteConfirmOpen}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setDeleteConfirmOpen(false)}
+            >
+                <Pressable
+                    className="flex-1 bg-black/40 justify-end"
+                    onPress={() => setDeleteConfirmOpen(false)}
+                >
+                    {/* No-op onPress so taps inside the sheet don't fall through to the backdrop above and close it */}
+                    <Pressable onPress={() => {}} className="bg-background rounded-t-xl p-5 pb-12 gap-4">
+                        <Text className="text-lg font-semibold">Delete this log?</Text>
+                        <Text className="text-muted-foreground">This action cannot be undone.</Text>
+                        <View className="flex-row gap-3">
+                            <Button
+                                onPress={() => setDeleteConfirmOpen(false)}
+                                disabled={isDeleting}
+                                variant="outline" className="flex-1">
+                                <Text>Cancel</Text>
+                            </Button>
+                            <Button
+                                onPress={handleDeleteLog}
+                                loading={isDeleting}
+                                disabled={isDeleting}
+                                variant="destructive" className="flex-1">
+                                <Text className="text-white">Delete</Text>
+                            </Button>
+                        </View>
                     </Pressable>
                 </Pressable>
             </Modal>

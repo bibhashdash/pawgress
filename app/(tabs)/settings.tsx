@@ -2,7 +2,7 @@ import {SafeAreaView} from "react-native-safe-area-context";
 import {api} from "@/convex/_generated/api";
 import {TabHeader} from "@/components/TabHeader";
 import {useAuth, useUser} from "@clerk/expo";
-import {View, Image, Alert, Pressable} from "react-native";
+import {View, Image, Modal, Pressable} from "react-native";
 import {Text} from "@/components/ui/text";
 import {X, EditIcon, LogOut, PlusCircle, Square} from "lucide-react-native";
 import {useCallback, useEffect, useState} from "react";
@@ -30,6 +30,7 @@ export default function Settings() {
     const [newTagColor, setNewTagColor] = useState<string>("#64748b");
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [isUpdatingProfile, setIsUpdatingProfile] = useState<boolean>(false)
+    const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
 
     const [result, setResult] = useState<{
         label: string,
@@ -105,18 +106,16 @@ export default function Settings() {
             })
     }
 
-    const handleSignOut = () => {
-        Alert.alert("Sign out", "Are you sure you want to sign out?", [
-            {text: "Cancel", style: "cancel"},
-            {text: "Sign out", style: "destructive", onPress: () => signOut()},
-        ]);
+    const confirmSignOut = () => {
+        setSignOutConfirmOpen(false);
+        signOut();
     };
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
             <TabHeader
                 title="Settings"
                 right={
-                    <Button className="p-0" variant="icon" onPress={handleSignOut}>
+                    <Button className="p-0" variant="icon" onPress={() => setSignOutConfirmOpen(true)}>
                         <LogOut />
                     </Button>
                 }
@@ -245,7 +244,36 @@ export default function Settings() {
                 </View>
 
             </KeyboardAwareScrollView>
-            <Toast />
+
+            <Modal
+                visible={signOutConfirmOpen}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setSignOutConfirmOpen(false)}
+            >
+                <Pressable
+                    className="flex-1 bg-black/40 justify-end"
+                    onPress={() => setSignOutConfirmOpen(false)}
+                >
+                    {/* No-op onPress so taps inside the sheet don't fall through to the backdrop above and close it */}
+                    <Pressable onPress={() => {}} className="bg-background rounded-t-xl p-5 pb-12 gap-4">
+                        <Text className="text-lg font-semibold">Sign out?</Text>
+                        <Text className="text-muted-foreground">Are you sure you want to sign out?</Text>
+                        <View className="flex-row gap-3">
+                            <Button
+                                onPress={() => setSignOutConfirmOpen(false)}
+                                variant="outline" className="flex-1">
+                                <Text>Cancel</Text>
+                            </Button>
+                            <Button
+                                onPress={confirmSignOut}
+                                variant="destructive" className="flex-1">
+                                <Text className="text-white">Sign out</Text>
+                            </Button>
+                        </View>
+                    </Pressable>
+                </Pressable>
+            </Modal>
         </SafeAreaView>
     );
 }

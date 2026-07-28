@@ -43,7 +43,7 @@ function LocalSubclassRow({subclass, onSave, onDelete}: {
     return (
         <View className="gap-2">
             <View className="flex-row gap-3 items-center">
-                <View className="flex-1 ml-20">
+                <View className="flex-1">
                     <Input
                         ref={inputRef}
                         onFocus={() => {
@@ -170,7 +170,8 @@ export default function BehaviourClassAdd () {
                                 <Text className="mb-2">Name</Text>
                                 <Input className="rounded-md h-[50]" value={title} onChangeText={setTitle} />
                             </View>
-                            <View className="mt-3 pl-20">
+                            <View className="mt-3">
+                                <Text className="mb-2">Subclasses</Text>
                                 <View className="flex-row items-center gap-2">
                                     <Input
                                         onSubmitEditing={e => {

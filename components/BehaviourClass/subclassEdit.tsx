@@ -82,7 +82,7 @@ export const SubclassEdit = ({subclass, onResult}: {
         <View className="gap-2">
             <View className="flex-row gap-3 items-center">
                 <View
-                    className="flex-1 ml-20">
+                    className="flex-1">
                     <Input
                         ref={inputRef}
                         onFocus={() => {

@@ -188,7 +188,8 @@ export default function BehaviourClassDetails() {
                                     </View>
                                 }
                             </View>
-                            <View className="flex-row items-center gap-3 ml-20 mt-3">
+                            <Text className="mb-2 mt-3">Subclasses</Text>
+                            <View className="flex-row items-center gap-3">
                                 <Input
                                     onFocus={() => setAddMode(true)}
                                     onSubmitEditing={e => addNewSubclass()} placeholder="Add a subclass" className="flex-1 rounded-md h-[50]" value={newSubclass} onChangeText={setNewSubclass} />

@@ -2,13 +2,33 @@ import { useAuth } from "@clerk/expo";
 import { Redirect, Tabs, useRouter } from "expo-router";
 import { ChevronLeft, House, NotebookPen, PawPrint, Settings } from "lucide-react-native";
 import { Pressable } from "react-native";
+import { useEffect } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export default function TabLayout() {
     const { isSignedIn } = useAuth();
     const router = useRouter();
+    const settings = useQuery(api.settings.get, isSignedIn ? {} : "skip");
+    const ensureSettings = useMutation(api.settings.ensure);
+
+    useEffect(() => {
+        if (isSignedIn) {
+            ensureSettings({});
+        }
+    }, [isSignedIn]);
 
     if (!isSignedIn) {
         return <Redirect href="/(auth)/sign-in" />;
+    }
+
+    // Settings row doesn't exist yet (ensureSettings above is still in
+    // flight) or hasn't loaded — render nothing rather than flashing the
+    // tabs before we know whether onboarding is needed.
+    if (!settings) return null;
+
+    if (!settings.hasCompletedOnboarding) {
+        return <Redirect href="/onboarding" />;
     }
 
     return (

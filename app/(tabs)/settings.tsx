@@ -4,31 +4,27 @@ import {TabHeader} from "@/components/TabHeader";
 import {useAuth, useUser} from "@clerk/expo";
 import {View, Image, Modal, Pressable} from "react-native";
 import {Text} from "@/components/ui/text";
-import {X, EditIcon, LogOut, PlusCircle, Square} from "lucide-react-native";
+import {X, EditIcon, LogOut, PlusCircle} from "lucide-react-native";
 import {useCallback, useEffect, useState} from "react";
 import {Button} from "@/components/ui/button";
-import {useMutation, useQuery} from "convex/react";
+import {useQuery} from "convex/react";
 import {TagEdit} from "@/components/Tags/tagEdit";
+import {TagAdd} from "@/components/Tags/tagAdd";
 import {useFocusEffect} from "expo-router/react-navigation";
 import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import {Input} from "@/components/ui/input";
-import {TAG_COLOR_PRESETS} from "@/lib/tagColors";
 import {isStringBlank} from "@/lib/utils";
 import Toast from 'react-native-toast-message';
 
 export default function Settings() {
     const {user} = useUser();
     const [editVisible, setEditVisible] = useState(false);
-    const addTag = useMutation(api.tags.create)
 
     const {signOut} = useAuth();
     const tags = useQuery(api.tags.list);
     const [showAddTag, setShowAddTag] = useState(false);
     const [firstName, setFirstName] = useState(user?.firstName ?? "");
     const [lastName, setLastName] = useState(user?.lastName ?? "");
-    const [newTagName, setNewTagName] = useState<string>("")
-    const [newTagColor, setNewTagColor] = useState<string>("#64748b");
-    const [isLoading, setIsLoading] = useState<boolean>(false)
     const [isUpdatingProfile, setIsUpdatingProfile] = useState<boolean>(false)
     const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
 
@@ -50,38 +46,11 @@ export default function Settings() {
     useFocusEffect(
         useCallback(() => {
             setShowAddTag(false);
-            setNewTagName("")
-            setNewTagColor("")
             setFirstName(user?.firstName ?? "")
             setLastName(user?.lastName ?? "")
             setEditVisible(false)
         }, [])
     );
-
-    const addNewTag = () => {
-        setIsLoading(true)
-        addTag({
-            name: newTagName,
-            color: newTagColor ?? "#64748b",
-        }).then(() => {
-            setResult({
-                label: "success",
-                message: "Tag successfully added"
-            })
-        })
-            .catch(() => {
-                setResult({
-                    label: "error",
-                    message: "There was an error adding the tag"
-                })
-            })
-            .finally(() => {
-                setIsLoading(false)
-                setShowAddTag(false);
-                setNewTagName("")
-                setNewTagColor("")
-            })
-    }
 
     const updateUserDetails = () => {
         setIsUpdatingProfile(true)
@@ -198,41 +167,11 @@ export default function Settings() {
                     {
                         showAddTag
                         && (
-                            <View className="gap-3 bg-popover border border-input rounded-md p-4">
-                                <Text className="font-semibold">Tag name</Text>
-                                <Input
-                                    className="rounded-md h-[50] w-full border border-input bg-white"
-                                    value={newTagName} onChangeText={setNewTagName}
-                                    onSubmitEditing={() => addNewTag()}
-                                />
-                                <Text className="font-semibold">Tag Color</Text>
-                                <View className="flex-row flex-wrap gap-3">
-                                    {
-                                        TAG_COLOR_PRESETS.map((color) => (
-                                            <Pressable key={color.hex} onPress={() => setNewTagColor(color.hex)}>
-                                                <Square
-                                                    strokeWidth={newTagColor === color.hex ? 1 : 0}
-                                                    stroke={newTagColor === color.hex ? "#000" : "" }
-                                                    size={40} color={color.hex} fill={color.hex}
-                                                />
-                                            </Pressable>
-                                        ))
-                                    }
-                                </View>
-                                <View className="flex-row gap-2 flex-1">
-                                    <Button onPress={() => {
-                                        setShowAddTag(false);
-                                        setNewTagName("")
-                                        setNewTagColor("")
-                                    }} className="flex-1" variant="outline">
-                                        <Text>Cancel</Text>
-                                    </Button>
-                                    <Button onPress={addNewTag} disabled={!newTagName || !newTagColor} className="flex-1" variant="primary">
-                                        <Text className="text-white">Submit</Text>
-                                    </Button>
-
-                                </View>
-                            </View>
+                            <TagAdd
+                                onResult={setResult}
+                                onCancel={() => setShowAddTag(false)}
+                                onAdded={() => setShowAddTag(false)}
+                            />
                         )
                     }
 

@@ -9,6 +9,9 @@ export default defineSchema({
         // Denormalized count of rows in the tags table, kept in sync by
         // tags.create/remove.
         tagCount: v.number(),
+        // Gates the onboarding carousel — false for brand-new rows, flipped
+        // to true once the user completes it.
+        hasCompletedOnboarding: v.boolean(),
     }).index("by_owner", ["ownerId"]),
 
     tags: defineTable({

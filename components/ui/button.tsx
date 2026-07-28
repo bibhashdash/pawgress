@@ -18,6 +18,7 @@ const buttonVariants = cva(
                 ghost: "active:opacity-50",
                 icon: "active:opacity-50",
                 link: "",
+                fun: "bg-blue active:opacity-90"
             },
             size: {
                 default: "h-12 px-5",
@@ -43,7 +44,8 @@ const buttonTextVariants = cva("text-base font-semibold", {
             secondary: "text-secondary-foreground",
             ghost: "text-foreground",
             link: "text-accent underline",
-            icon: "text-foreground"
+            icon: "text-foreground",
+            fun: "text-primary-foreground"
         },
         size: {
             default: "",

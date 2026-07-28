@@ -28,6 +28,7 @@ module.exports = {
                 border: "#E2DFD6",
                 input: "#E2DFD6",
                 ring: "#EB5E28",
+                blue: "#051b2b",
             },
             borderRadius: {
                 sm: "8px",

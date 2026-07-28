@@ -39,13 +39,13 @@ export const TagEdit = ({tag, onResult}: {
             color: newColor ?? tag.color,
         }).then(() => {
             onResult({
-                label: "Success",
+                label: "success",
                 message: "Tag successfully updated"
             })
         })
             .catch(() => {
                 onResult({
-                    label: "Error",
+                    label: "error",
                     message: "There was an error updating the tag"
                 })
             })
@@ -61,13 +61,13 @@ export const TagEdit = ({tag, onResult}: {
             id: tag._id,
         }).then(() => {
             onResult({
-                label: "Success",
+                label: "success",
                 message: "Tag successfully deleted"
             })
         })
             .catch(() => {
                 onResult({
-                    label: "Error",
+                    label: "error",
                     message: "There was an error deleting the tag"
                 })
             })

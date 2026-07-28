@@ -10,6 +10,7 @@ import {Circle, PlusCircle, Trash2, Upload} from "lucide-react-native";
 import {cn, formatDateTime, isTimestampForCurrentDay, isTimestampWithinLastDays} from "@/lib/utils";
 import type {Id} from "@/convex/_generated/dataModel";
 import {Button} from "@/components/ui/button";
+import Toast from "react-native-toast-message";
 
 type DateRangeFilter = "today" | "week" | "all";
 
@@ -62,7 +63,7 @@ export default function Log() {
                     style: "destructive",
                     onPress: () => {
                         removeLogEntry({id}).catch(() => {
-                            Alert.alert("Error", "There was an error deleting this entry.");
+                            Toast.show({type: "error", text1: "There was an error deleting this entry."});
                         });
                     },
                 },

@@ -13,6 +13,7 @@ import {useCallback, useEffect, useState} from "react";
 import {isStringBlank} from "@/lib/utils";
 import {useFocusEffect} from "expo-router/react-navigation";
 import {router} from "expo-router";
+import Toast from 'react-native-toast-message';
 
 export default function BehaviourClassDetails() {
     const {id} = useLocalSearchParams<{ id: string }>()
@@ -40,17 +41,21 @@ export default function BehaviourClassDetails() {
 
     useEffect(() => {
         if (result !== null) {
-            Alert.alert(
-                result.label,
-                result.message,
-                [
-                    {
-                        text: 'Ok',
-                        onPress: () => setResult(null),
-                        style: 'default',
-                    },
-                ]
-            );
+            Toast.show({
+                type: result.label,
+                text1: result.message,
+            })
+            // Alert.alert(
+            //     result.label,
+            //     result.message,
+            //     [
+            //         {
+            //             text: 'Ok',
+            //             onPress: () => setResult(null),
+            //             style: 'default',
+            //         },
+            //     ]
+            // );
         }
     }, [result]);
     useFocusEffect(
@@ -68,13 +73,13 @@ export default function BehaviourClassDetails() {
         })
             .then(() => {
             setResult({
-                label: "Success",
+                label: "success",
                 message: "Title successfully updated"
             })
         })
             .catch(() => {
                 setResult({
-                    label: "Error",
+                    label: "error",
                     message: "There was an error updating the title"
                 })
             })
@@ -92,7 +97,7 @@ export default function BehaviourClassDetails() {
             })
             .catch(() => {
                 setResult({
-                    label: "Error",
+                    label: "error",
                     message: "There was an error deleting this class"
                 })
             })
@@ -109,12 +114,12 @@ export default function BehaviourClassDetails() {
             name: newSubclass,
         }).then(
             () => setResult({
-                label: "Success",
+                label: "success",
                 message: "Subclass successfully added"
             })
         ). catch(
             () => setResult({
-                label: "Error",
+                label: "error",
                 message: "There was an error adding this Subclass"
             })
         ).finally(() => {

@@ -8,6 +8,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { useFonts, Fredoka_500Medium } from "@expo-google-fonts/fredoka";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import Toast, {BaseToast, ErrorToast, SuccessToast} from "react-native-toast-message";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,6 +33,28 @@ export default function RootLayout() {
             <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
                 <KeyboardProvider>
                     <Stack initialRouteName="(tabs)" screenOptions={{ headerShown: false }} />
+                    <Toast position="bottom" config={{
+                        success: (props) => (
+                            <SuccessToast
+                                {...props}
+                                text1Style={{
+                                    fontSize: 15,
+                                    fontWeight: '400',
+                                    fontFamily: "Fredoka_500Medium"
+                                }}
+                            />
+                        ),
+                        error: (props) => (
+                            <ErrorToast
+                                {...props}
+                                text1Style={{
+                                    fontSize: 15,
+                                    fontWeight: '400',
+                                    fontFamily: "Fredoka_500Medium"
+                                }}
+                            />
+                        )
+                    }} />
                 </KeyboardProvider>
             </ConvexProviderWithClerk>
         </ClerkProvider>

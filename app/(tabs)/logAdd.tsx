@@ -13,6 +13,7 @@ import {useFocusEffect} from "expo-router/react-navigation";
 import DateTimePicker, {DateTimePickerAndroid} from "@react-native-community/datetimepicker";
 import {Button} from "@/components/ui/button";
 import {router} from "expo-router";
+import Toast from "react-native-toast-message";
 
 
 export default function LogAdd() {
@@ -101,16 +102,10 @@ export default function LogAdd() {
                     ]
                 );
             }).catch(() => {
-                Alert.alert(
-                    "Error",
-                    "There was an error creating this entry",
-                    [
-                        {
-                            text: 'Ok',
-                            style: 'cancel',
-                        }
-                    ]
-                );
+                Toast.show({
+                    type: "error",
+                    text1: "There was an error creating this entry",
+                });
             }).finally(() => {
                 setIsSubmitting(false)
             })

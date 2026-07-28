@@ -10,6 +10,7 @@ import {useMutation} from "convex/react";
 import {api} from "@/convex/_generated/api";
 import {router} from "expo-router";
 import {useFocusEffect} from "expo-router/react-navigation";
+import Toast from "react-native-toast-message";
 
 // Local-only row: no api calls here — save/delete just update the parent's
 // in-memory subClasses array. The real create mutation only fires once,
@@ -148,16 +149,10 @@ export default function BehaviourClassAdd () {
             })
             .catch(
                 err => {
-                    Alert.alert(
-                        "Error",
-                        "There was an error creating this class",
-                        [
-                            {
-                                text: 'Ok',
-                                style: 'cancel',
-                            }
-                        ]
-                    );
+                    Toast.show({
+                        type: "error",
+                        text1: "There was an error creating this class",
+                    });
                 }
             ).finally(() => setIsLoading(false))
     }

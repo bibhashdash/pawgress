@@ -14,6 +14,8 @@ import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import {Input} from "@/components/ui/input";
 import {TAG_COLOR_PRESETS} from "@/lib/tagColors";
 import {isStringBlank} from "@/lib/utils";
+import Toast from 'react-native-toast-message';
+
 export default function Settings() {
     const {user} = useUser();
     const [editVisible, setEditVisible] = useState(false);
@@ -36,17 +38,11 @@ export default function Settings() {
 
     useEffect(() => {
         if (result !== null) {
-            Alert.alert(
-                result.label,
-                result.message,
-                [
-                    {
-                        text: 'Ok',
-                        onPress: () => setResult(null),
-                        style: 'default',
-                    },
-                ]
-            );
+            Toast.show({
+                type: result.label,
+                text1: result.message,
+            });
+            setResult(null);
         }
     }, [result]);
 
@@ -68,13 +64,13 @@ export default function Settings() {
             color: newTagColor ?? "#64748b",
         }).then(() => {
             setResult({
-                label: "Success",
+                label: "success",
                 message: "Tag successfully added"
             })
         })
             .catch(() => {
                 setResult({
-                    label: "Error",
+                    label: "error",
                     message: "There was an error adding the tag"
                 })
             })
@@ -93,14 +89,14 @@ export default function Settings() {
             lastName,
         }).then(() => {
             setResult({
-                label: "Success",
+                label: "success",
                 message: "Profile successfully updated"
             })
             setEditVisible(false)
         })
             .catch(() => {
                 setResult({
-                    label: "Error",
+                    label: "error",
                     message: "There was an error updating your profile"
                 })
             })
@@ -130,7 +126,7 @@ export default function Settings() {
                 bottomOffset={20}
                 keyboardShouldPersistTaps="handled"
             >
-                <View className="px-6 mt-4 gap-3">
+                <View className="mt-4 gap-3">
                     <View className="items-center">
                         <Image src={user?.imageUrl} className="rounded-full w-[96] h-[96]"/>
                         <Text className="text-base  text-primary">{user?.primaryEmailAddress?.emailAddress}</Text>
@@ -249,6 +245,7 @@ export default function Settings() {
                 </View>
 
             </KeyboardAwareScrollView>
+            <Toast />
         </SafeAreaView>
     );
 }

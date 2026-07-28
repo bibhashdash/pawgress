@@ -40,13 +40,13 @@ export const SubclassEdit = ({subclass, onResult}: {
             name: newSubclassName,
         }).then(() => {
             onResult({
-                label: "Success",
+                label: "success",
                 message: "Subclass successfully updated"
             })
         })
             .catch(() => {
                 onResult({
-                    label: "Error",
+                    label: "error",
                     message: "There was an error updating the Subclass"
                 })
             })
@@ -62,13 +62,13 @@ export const SubclassEdit = ({subclass, onResult}: {
             id: subclass._id,
         }).then(() => {
             onResult({
-                label: "Success",
+                label: "success",
                 message: "Subclass successfully deleted"
             })
         })
             .catch(() => {
                 onResult({
-                    label: "Error",
+                    label: "error",
                     message: "There was an error deleting the Subclass"
                 })
             })

@@ -14,6 +14,7 @@ import {Link, router, useLocalSearchParams} from "expo-router";
 import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import DateTimePicker, {DateTimePickerAndroid} from "@react-native-community/datetimepicker";
 import {TabHeader} from "@/components/TabHeader";
+import Toast from "react-native-toast-message";
 
 export default function LogDetails() {
     const {id} = useLocalSearchParams<{ id: Id<"logEntries"> }>()
@@ -89,27 +90,15 @@ export default function LogDetails() {
                 tagId: selectedTag._id,
             }).then(() => {
                 setEditMode(false);
-                Alert.alert(
-                    "Success",
-                    "Entry successfully updated",
-                    [
-                        {
-                            text: 'Ok',
-                            style: 'default',
-                        }
-                    ]
-                );
+                Toast.show({
+                    type: "success",
+                    text1: "Entry successfully updated",
+                });
             }).catch(() => {
-                Alert.alert(
-                    "Error",
-                    "There was an error updating this entry",
-                    [
-                        {
-                            text: 'Ok',
-                            style: 'cancel',
-                        }
-                    ]
-                );
+                Toast.show({
+                    type: "error",
+                    text1: "There was an error updating this entry",
+                });
             }).finally(() => {
                 setIsSubmitting(false)
             })
@@ -129,7 +118,7 @@ export default function LogDetails() {
                         removeLogEntry({id})
                             .then(() => router.navigate("/(tabs)/log"))
                             .catch(() => {
-                            Alert.alert("Error", "There was an error deleting this entry.");
+                            Toast.show({type: "error", text1: "There was an error deleting this entry."});
                         });
                     },
                 },

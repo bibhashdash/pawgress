@@ -1,5 +1,5 @@
-import {useMutation, useQuery} from "convex/react";
-import {useCallback, useState} from "react";
+import {useQuery} from "convex/react";
+import {useCallback} from "react";
 import {FlatList, Pressable, View} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {api} from "@/convex/_generated/api";

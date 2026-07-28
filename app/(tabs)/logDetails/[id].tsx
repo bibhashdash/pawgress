@@ -6,7 +6,7 @@ import {api} from "@/convex/_generated/api";
 import type {Id} from "@/convex/_generated/dataModel";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {ChevronDown, ChevronLeft, Circle, Pencil, PlusCircle, Trash2Icon, Upload} from "lucide-react-native";
+import {ChevronDown, ChevronLeft, Circle, Pencil, PlusCircle, Trash2Icon} from "lucide-react-native";
 import {useCallback, useState} from "react";
 import {cn, formatDateTime} from "@/lib/utils";
 import {useFocusEffect} from "expo-router/react-navigation";

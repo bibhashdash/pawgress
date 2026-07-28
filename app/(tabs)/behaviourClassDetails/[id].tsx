@@ -28,7 +28,7 @@ export default function BehaviourClassDetails() {
     const [title, setTitle] = useState<string>(behaviour?.title ?? "")
     const [editMode, setEditMode] = useState<boolean>(false)
     const [deleteMode, setDeleteMode] = useState<boolean>(false)
-    const [addMode, setAddMode] = useState<boolean>(false)
+
     const [newSubclass, setNewSubclass] = useState<string>("")
     const [result, setResult] = useState<{
         label: string,
@@ -114,10 +114,8 @@ export default function BehaviourClassDetails() {
         ).finally(() => {
             setIsAddingNewSubclass(false)
             setNewSubclass("")
-            setAddMode(false)
         })
         setNewSubclass("")
-        setAddMode(false)
     }
 
     return (
@@ -191,8 +189,7 @@ export default function BehaviourClassDetails() {
                             <Text className="mb-2 mt-3">Subclasses</Text>
                             <View className="flex-row items-center gap-3">
                                 <Input
-                                    onFocus={() => setAddMode(true)}
-                                    onSubmitEditing={e => addNewSubclass()} placeholder="Add a subclass" className="flex-1 rounded-md h-[50]" value={newSubclass} onChangeText={setNewSubclass} />
+                                    onSubmitEditing={() => addNewSubclass()} placeholder="Add a subclass" className="flex-1 rounded-md h-[50]" value={newSubclass} onChangeText={setNewSubclass} />
                                 <View className="flex-row gap-3 items-center">
                                     <Button loading={isAddingNewSubclass} onPress={() => addNewSubclass()} className="p-0" variant="icon" disabled={isStringBlank(newSubclass)}>
                                         <CirclePlus />
@@ -202,7 +199,6 @@ export default function BehaviourClassDetails() {
                                         variant="icon" size="sm" className="p-0"
                                         onPress={() => {
                                             setNewSubclass("")
-                                            setAddMode(false)
                                         }}>
                                         <X />
                                     </Button>

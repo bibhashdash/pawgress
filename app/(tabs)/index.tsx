@@ -10,7 +10,6 @@ import {isTimestampForCurrentDay} from "@/lib/utils";
 import {Id} from "@/convex/_generated/dataModel";
 import {Fragment} from "react";
 import Svg, {Circle, Polyline} from "react-native-svg";
-import Toast from "react-native-toast-message";
 
 function isSameDay(timestamp: number, date: Date) {
     const other = new Date(timestamp);

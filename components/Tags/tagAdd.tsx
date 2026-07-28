@@ -16,7 +16,6 @@ export const TagAdd = ({onResult, onCancel, onAdded}: {
     onAdded?: () => void,
 }) => {
     const addTag = useMutation(api.tags.create)
-    const tags = useQuery(api.tags.list)
     const [newTagName, setNewTagName] = useState<string>("")
     const [newTagColor, setNewTagColor] = useState<string>("")
     const [isLoading, setIsLoading] = useState<boolean>(false)

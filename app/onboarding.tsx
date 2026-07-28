@@ -17,7 +17,6 @@ export default function Onboarding() {
     const {width} = useWindowDimensions();
     const scrollRef = useRef<ScrollView>(null);
     const [index, setIndex] = useState(0);
-    const [addCategoryOpen, setAddCategoryOpen] = useState(false);
     const [isFinishing, setIsFinishing] = useState(false);
     const completeOnboarding = useMutation(api.settings.completeOnboarding);
     const tags = useQuery(api.tags.list)

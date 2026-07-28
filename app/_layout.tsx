@@ -8,7 +8,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { useFonts, Fredoka_500Medium } from "@expo-google-fonts/fredoka";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import Toast, {BaseToast, ErrorToast, SuccessToast} from "react-native-toast-message";
+import Toast, {ErrorToast, SuccessToast} from "react-native-toast-message";
 
 SplashScreen.preventAutoHideAsync();
 

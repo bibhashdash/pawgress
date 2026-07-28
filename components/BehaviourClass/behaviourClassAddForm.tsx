@@ -139,7 +139,7 @@ export function BehaviourClassAddForm({onCreated, onError}: {
                             <Text className="mb-2">Subclasses</Text>
                             <View className="flex-row items-center gap-2">
                                 <Input
-                                    onSubmitEditing={e => {
+                                    onSubmitEditing={() => {
                                         setSubClasses(prevState => [...prevState, subClass])
                                         setSubClass("")
                                     }} placeholder="Add a subclass" className="flex-1 rounded-md h-[50]" value={subClass} onChangeText={setSubClass} />

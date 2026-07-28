@@ -5,6 +5,7 @@ import { Pressable } from "react-native";
 import { useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { AppSplashScreen } from "@/components/AppSplashScreen";
 
 export default function TabLayout() {
     const { isSignedIn } = useAuth();
@@ -23,9 +24,9 @@ export default function TabLayout() {
     }
 
     // Settings row doesn't exist yet (ensureSettings above is still in
-    // flight) or hasn't loaded — render nothing rather than flashing the
-    // tabs before we know whether onboarding is needed.
-    if (!settings) return null;
+    // flight) or hasn't loaded — show the branded splash rather than
+    // flashing the tabs before we know whether onboarding is needed.
+    if (!settings) return <AppSplashScreen />;
 
     if (!settings.hasCompletedOnboarding) {
         return <Redirect href="/onboarding" />;

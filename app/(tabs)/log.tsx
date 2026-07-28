@@ -6,7 +6,7 @@ import {useMutation, useQuery} from "convex/react";
 import {api} from "@/convex/_generated/api";
 import {useState} from "react";
 import {Link, router} from "expo-router";
-import {Circle, CircleDot, LockIcon, PlusCircle, Trash2, Upload} from "lucide-react-native";
+import {Circle, PlusCircle, Trash2, Upload} from "lucide-react-native";
 import {cn, formatDateTime, isTimestampForCurrentDay, isTimestampWithinLastDays} from "@/lib/utils";
 import type {Id} from "@/convex/_generated/dataModel";
 import {Button} from "@/components/ui/button";

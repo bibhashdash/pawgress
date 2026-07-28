@@ -22,7 +22,7 @@ export default function Behaviours() {
         <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
             <TabHeader
                 title="Behaviours"
-                right={<Link href={"/(tabs)/behaviourClassAdd"}>
+                right={<Link disabled={behaviours?.length === 5} href={"/(tabs)/behaviourClassAdd"}>
                     <PlusCircle color="#EB5E28"/>
                 </Link>}
             />

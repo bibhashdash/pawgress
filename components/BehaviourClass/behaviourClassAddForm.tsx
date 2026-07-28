@@ -139,6 +139,7 @@ export function BehaviourClassAddForm({onCreated, onError}: {
                             <Text className="mb-2">Subclasses</Text>
                             <View className="flex-row items-center gap-2">
                                 <Input
+                                    readOnly={subClasses.length === 4}
                                     onSubmitEditing={() => {
                                         setSubClasses(prevState => [...prevState, subClass])
                                         setSubClass("")

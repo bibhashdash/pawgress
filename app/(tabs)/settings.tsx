@@ -155,7 +155,7 @@ export default function Settings() {
                     <View className="gap-2 mt-4 flex-row justify-between">
                         <Text className="text-lg font-bold text-primary">Tags</Text>
                         {!showAddTag
-                            ? <Button variant="icon" className="p-0 m-0" onPress={() => setShowAddTag(true)}>
+                            ? <Button disabled={tags?.length === 4} variant="icon" className="p-0 m-0" onPress={() => setShowAddTag(true)}>
                                 <PlusCircle/>
                             </Button>
                             : <Button variant="icon" className="p-0 m-0" onPress={() => setShowAddTag(false)}>
